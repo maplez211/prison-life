@@ -1,4 +1,4 @@
--- UI Script Precision | Breakout (Sentenced)
+-- UI Script Precision | Prison Life
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
