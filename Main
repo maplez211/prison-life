@@ -42,7 +42,7 @@ local currentSkybox = nil
 local SmoothedTargetPosition = nil
 local CurrentTarget = nil
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/sentenced-breakout/refs/heads/main/UI"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
 
 -- ============ FOV CIRCLE ============
 local screenGui = Instance.new("ScreenGui")
