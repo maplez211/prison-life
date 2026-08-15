@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.2",
+  SubTitle = "by 2knw | Version 0.0.4",
   SaveFolder = "PrecisionPrisonLife" 
 })
 
@@ -191,6 +191,7 @@ local AimbotSection = AimbotTab:AddSection({"Aim"})
 
 AimbotTab:AddToggle({
   Name = "Silent Aim",
+  Description = "Silent Aim method by 7zz",
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.Enabled = v
@@ -198,7 +199,8 @@ AimbotTab:AddToggle({
 })
 
 AimbotTab:AddToggle({
-  Name = "Visible Check",
+  Name = "Wall Check",
+  Description = "Ignore Players behind Walls",
   Default = false,
   Callback = function(v)
     getgenv().SilentAimSettings.VisibleCheck = v
@@ -207,6 +209,7 @@ AimbotTab:AddToggle({
 
 AimbotTab:AddToggle({
   Name = "Team Check",
+  Description = "Ignore Players on your Team",
   Default = false,
   Callback = function(v)
     getgenv().SilentAimSettings.TeamCheck = v
@@ -215,6 +218,7 @@ AimbotTab:AddToggle({
 
 AimbotTab:AddToggle({
   Name = "Friend Check",
+  Description = "Ignore your Friends",
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.FriendCheck = v
@@ -222,27 +226,22 @@ AimbotTab:AddToggle({
 })
 
 AimbotTab:AddToggle({
-  Name = "Target Bot",
-  Default = false,
-  Callback = function(v)
-    getgenv().SilentAimSettings.Targetbot = v
-  end
-})
-
-AimbotTab:AddToggle({
   Name = "Ignore Inmates",
+  Description = "Ignore Inmate Players",
   Default = false,
   Callback = function(v) getgenv().SilentAimSettings.IgnoreInmates = v end
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Guards",
+  Description = "Ignore Guard Players",
   Default = false,
   Callback = function(v) getgenv().SilentAimSettings.IgnoreGuards = v end
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Criminals",
+  Description = "Ignore Criminal Players",
   Default = false,
   Callback = function(v) getgenv().SilentAimSettings.IgnoreCriminals = v end
 })
@@ -259,6 +258,16 @@ AimbotTab:AddToggle({
   Description = "Only target trespassing inmates (Guards only)",
   Default = false,
   Callback = function(v) getgenv().SilentAimSettings.TrespassCheck = v end
+})
+
+AimbotTab:AddDropdown({
+  Name = "Target Part",
+  Description = "Choose which body part the Silent Aim will lock onto",
+  Options = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
+  Default = "HumanoidRootPart",
+  Callback = function(Value)
+    getgenv().SilentAimSettings.TargetPart = Value
+  end
 })
 
 AimbotTab:AddSlider({
