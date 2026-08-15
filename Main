@@ -54,7 +54,7 @@ fovCircle.Thickness = Settings.FOVThickness
 fovCircle.Filled = false
 fovCircle.Transparency = 1
 
-local function toggleFOVCircle(hide)
+function toggleFOVCircle(hide)
     fovCircle.Visible = not hide and Settings.Enabled and Settings.FOVEnabled
 end
 
