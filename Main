@@ -21,7 +21,7 @@ getgenv().SilentAimSettings = {
     Smoothing = 1,
     HitChance = 100,
     FOVEnabled = true,
-    FOVRadius = 120,
+    FOVRadius = 100,
     FOVColor = Color3.fromRGB(255, 255, 255),
     FOVThickness = 1.5,
     FriendCheck = true
@@ -143,7 +143,7 @@ local function getClosestTarget()
                         screenDist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
                     end
                     
-                    if screenDist <= (Settings.FOVRadius or FOV_RADIUS) then
+                    if screenDist <= FOV_RADIUS then
                         local worldDist = (part.Position - localRoot.Position).Magnitude
                         if worldDist < shortestDistance then
                             closest = part
@@ -375,34 +375,57 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ============ TARGET HIGHLIGHT ============
-local lastTargetHighlight = nil
+local lastTargetPlayer = nil
 
 RunService.RenderStepped:Connect(function()
-    local targetHighlight = nil
+    local targetPlayer = nil
     
     if ESP_ENABLED and AIMBOT_ENABLED and CurrentTarget and CurrentTarget.Parent then
         local targetChar = CurrentTarget.Parent
         if targetChar:IsA("Model") then
-            local highlight = targetChar:FindFirstChild("ESPHighlight")
-            if highlight and highlight:IsA("Highlight") then
-                targetHighlight = highlight
+            local plr = Players:GetPlayerFromCharacter(targetChar)
+            local hum = targetChar:FindFirstChildOfClass("Humanoid")
+            if plr and hum and hum.Health > 0 and isValidTarget(plr) then
+                targetPlayer = plr
             end
         end
     end
     
-    if lastTargetHighlight and lastTargetHighlight ~= targetHighlight then
-        local plr = Players:GetPlayerFromCharacter(lastTargetHighlight.Parent)
-        if plr then applyESP(plr) end
+    if lastTargetPlayer and lastTargetPlayer ~= targetPlayer then
+        if lastTargetPlayer.Character and lastTargetPlayer.Character:FindFirstChild("ESPHighlight") then
+            applyESP(lastTargetPlayer)
+        end
     end
     
-    if targetHighlight then
-        targetHighlight.FillColor = Color3.fromRGB(255, 182, 255)
-        targetHighlight.OutlineColor = Color3.fromRGB(255, 182, 255)
-        targetHighlight.FillTransparency = 0.5
-        targetHighlight.OutlineTransparency = 0
+    if targetPlayer and targetPlayer.Character then
+        local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+        if highlight and highlight:IsA("Highlight") then
+            highlight.FillColor = Color3.fromRGB(255, 182, 255)
+            highlight.OutlineColor = Color3.fromRGB(255, 182, 255)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+        end
     end
     
-    lastTargetHighlight = targetHighlight
+    lastTargetPlayer = targetPlayer
+end)
+
+-- ============ ESP AUTO REFRESH ============
+task.spawn(function()
+    while task.wait(2) do
+        if ESP_ENABLED then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character then
+                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then
+                        applyESP(plr)
+                    else
+                        removeESP(plr)
+                    end
+                end
+            end
+        end
+    end
 end)
 
 -- ============ SPINBOT ============
