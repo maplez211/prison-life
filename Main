@@ -120,12 +120,15 @@ local function getClosestTarget()
         return nil
     end
     
+    local localRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not localRoot then return nil end
+    
     local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
     local mousePos = UserInputService:GetMouseLocation()
     local useMouse = not UserInputService.TouchEnabled
     
     local closest = nil
-    local shortestDistance = Settings.FOVRadius or FOV_RADIUS
+    local shortestDistance = math.huge
     
     for _, plr in ipairs(Players:GetPlayers()) do
         if isValidTarget(plr) then
@@ -133,15 +136,19 @@ local function getClosestTarget()
             if part then
                 local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
                 if onScreen then
-                    local dist
+                    local screenDist
                     if useMouse then
-                        dist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
                     else
-                        dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
                     end
-                    if dist < shortestDistance then
-                        closest = part
-                        shortestDistance = dist
+                    
+                    if screenDist <= (Settings.FOVRadius or FOV_RADIUS) then
+                        local worldDist = (part.Position - localRoot.Position).Magnitude
+                        if worldDist < shortestDistance then
+                            closest = part
+                            shortestDistance = worldDist
+                        end
                     end
                 end
             end
@@ -365,6 +372,37 @@ RunService.RenderStepped:Connect(function()
     else
         SmoothedTargetPosition = nil
     end
+end)
+
+-- ============ TARGET HIGHLIGHT ============
+local lastTargetHighlight = nil
+
+RunService.RenderStepped:Connect(function()
+    local targetHighlight = nil
+    
+    if ESP_ENABLED and AIMBOT_ENABLED and CurrentTarget and CurrentTarget.Parent then
+        local targetChar = CurrentTarget.Parent
+        if targetChar:IsA("Model") then
+            local highlight = targetChar:FindFirstChild("ESPHighlight")
+            if highlight and highlight:IsA("Highlight") then
+                targetHighlight = highlight
+            end
+        end
+    end
+    
+    if lastTargetHighlight and lastTargetHighlight ~= targetHighlight then
+        local plr = Players:GetPlayerFromCharacter(lastTargetHighlight.Parent)
+        if plr then applyESP(plr) end
+    end
+    
+    if targetHighlight then
+        targetHighlight.FillColor = Color3.fromRGB(255, 182, 255)
+        targetHighlight.OutlineColor = Color3.fromRGB(255, 182, 255)
+        targetHighlight.FillTransparency = 0.5
+        targetHighlight.OutlineTransparency = 0
+    end
+    
+    lastTargetHighlight = targetHighlight
 end)
 
 -- ============ SPINBOT ============
