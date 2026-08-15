@@ -34,6 +34,7 @@ getgenv().SilentAimSettings = {
     IgnoreCriminals = false,
     HostileCheck = false,
     TrespassCheck = false,
+    AutoShoot = false,
     TargetOnPlayer = nil
 }
 
@@ -403,6 +404,135 @@ RunService.RenderStepped:Connect(function()
             smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, Settings.Smoothing)
         end
     end
+end)
+
+-- ============ AUTO SHOOT ============
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ShootEvent = ReplicatedStorage:WaitForChild("GunRemotes"):WaitForChild("ShootEvent")
+local ReloadRemote = ReplicatedStorage:WaitForChild("GunRemotes"):WaitForChild("FuncReload")
+local Debris = game:GetService("Debris")
+
+local lastAutoShoot = 0
+local lastReloadRequest = 0
+local lastAutoTarget = nil
+local targetAcquiredTime = 0
+
+local function getGun()
+    local char = player.Character
+    if not char then return nil end
+    local children = char:GetChildren()
+    for index = #children, 1, -1 do
+        local tool = children[index]
+        if tool:IsA("Tool") and tool:GetAttribute("ToolType") == "Gun" then
+            return tool
+        end
+    end
+    return nil
+end
+
+local function getBulletsLabel()
+    local playerGui = player:FindFirstChild("PlayerGui")
+    local home = playerGui and playerGui:FindFirstChild("Home")
+    local hud = home and home:FindFirstChild("hud")
+    local bottomRight = hud and hud:FindFirstChild("BottomRightFrame")
+    local gunFrame = bottomRight and bottomRight:FindFirstChild("GunFrame")
+    return gunFrame and gunFrame:FindFirstChild("BulletsLabel") or nil
+end
+
+local function requestReload(gun)
+    local now = os.clock()
+    if now - lastReloadRequest < 0.5 then return end
+    if not gun or gun:GetAttribute("Local_ReloadSession") ~= 0 then return end
+    local storedAmmo = gun:GetAttribute("StoredAmmo")
+    if typeof(storedAmmo) == "number" and storedAmmo <= 0 then return end
+    lastReloadRequest = now
+    task.spawn(function()
+        pcall(function()
+            ReloadRemote:InvokeServer()
+        end)
+    end)
+end
+
+local function autoShoot()
+    if not Settings.AutoShoot or not Settings.Enabled then return end
+    
+    local gun = getGun()
+    if not gun or gun.Parent ~= player.Character then return end
+    
+    local now = os.clock()
+    local reloadSession = gun:GetAttribute("Local_ReloadSession") or 0
+    if reloadSession ~= 0 or gun:GetAttribute("Local_IsShooting") then return end
+    
+    local fireRate = math.max(gun:GetAttribute("FireRate") or 0.12, 0.12)
+    if now - lastAutoShoot < fireRate then return end
+    
+    local myChar = player.Character
+    if not myChar then return end
+    local myHead = myChar:FindFirstChild("Head")
+    if not myHead then return end
+    
+    local muzzle = gun:FindFirstChild("Muzzle")
+    local startPos = muzzle and muzzle.Position or myHead.Position
+    
+    local targetPart = currentTarget
+    if not targetPart or not targetPart.Parent then
+        lastAutoTarget = nil
+        return
+    end
+    
+    local targetChar = targetPart.Parent
+    if not targetChar:IsA("Model") then
+        lastAutoTarget = nil
+        return
+    end
+    
+    local targetPlr = Players:GetPlayerFromCharacter(targetChar)
+    if not targetPlr or not isValidTarget(targetPlr) then
+        lastAutoTarget = nil
+        return
+    end
+    
+    if targetPlr ~= lastAutoTarget then
+        targetAcquiredTime = now
+        lastAutoTarget = targetPlr
+    end
+    
+    if now - targetAcquiredTime < 0.15 then return end
+    
+    local weaponRange = gun:GetAttribute("Range")
+    if weaponRange and (targetPart.Position - startPos).Magnitude > weaponRange + 5 then
+        return
+    end
+    
+    local ammo = gun:GetAttribute("Local_CurrentAmmo") or gun:GetAttribute("CurrentAmmo") or 0
+    if ammo <= 0 then
+        requestReload(gun)
+        return
+    end
+    
+    lastAutoShoot = now
+    
+    local shots = {{myHead.Position, targetPart.Position, targetPart}}
+    ShootEvent:FireServer(shots)
+    
+    if gun ~= getGun() or gun.Parent ~= player.Character then return end
+    
+    local newAmmo = ammo - 1
+    gun:SetAttribute("Local_CurrentAmmo", newAmmo)
+    
+    local bulletsLabel = getBulletsLabel()
+    if bulletsLabel then
+        local sniper = gun:GetAttribute("Behavior") == "Sniper"
+        if sniper then
+            bulletsLabel.Text = newAmmo .. " | " .. (gun:GetAttribute("StoredAmmo") or 0)
+        else
+            bulletsLabel.Text = newAmmo .. "/" .. (gun:GetAttribute("MaxAmmo") or 30)
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    autoShoot()
 end)
 
 -- ============ TARGET HIGHLIGHT ============
