@@ -30,9 +30,9 @@ getgenv().SilentAimSettings = {
     SpinbotSpeed = 0,
     ESPEnabled = false,
     ESPNamesEnabled = true,
-    IgnorePrisoners = false,
+    IgnoreInmates = false,
     IgnoreGuards = false,
-    IgnoreEscaped = false,
+    IgnoreCriminals = false,
     TargetOnPlayer = nil
 }
 
@@ -84,9 +84,9 @@ local function isValidTarget(plr)
         if player.Team and plr.Team == player.Team then return false end
     end
     
-    if Settings.IgnorePrisoners and plr.Team and plr.Team.Name == "Prisoners" then return false end
-    if Settings.IgnoreGuards and plr.Team and plr.Team.Name == "Guards" then return false end
-    if Settings.IgnoreEscaped and plr.Team and plr.Team.Name == "Escaped" then return false end
+if Settings.IgnoreInmates and plr.Team and plr.Team.Name == "Inmates" then return false end
+if Settings.IgnoreGuards and plr.Team and plr.Team.Name == "Guards" then return false end
+if Settings.IgnoreCriminals and plr.Team and plr.Team.Name == "Criminals" then return false end
     
     if Settings.VisibleCheck then
         if not isVisible(plr.Character) then return false end
