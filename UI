@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.6",
+  SubTitle = "by 2knw | Version 0.0.7",
   SaveFolder = "PrecisionPrisonLife" 
 })
 
@@ -195,6 +195,15 @@ AimbotTab:AddToggle({
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.Enabled = v
+  end
+})
+
+AimbotTab:AddToggle({
+  Name = "Auto Shoot",
+  Description = "Automatically shoots when a target is found",
+  Default = false,
+  Callback = function(v)
+    getgenv().SilentAimSettings.AutoShoot = v
   end
 })
 
