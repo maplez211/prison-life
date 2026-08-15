@@ -385,15 +385,20 @@ RunService.RenderStepped:Connect(function()
         if targetChar:IsA("Model") then
             local plr = Players:GetPlayerFromCharacter(targetChar)
             local hum = targetChar:FindFirstChildOfClass("Humanoid")
-            if plr and hum and hum.Health > 0 and isValidTarget(plr) then
+            local hrp = targetChar:FindFirstChild("HumanoidRootPart")
+            
+            if plr and hum and hrp and hum.Health > 0 and isValidTarget(plr) then
                 targetPlayer = plr
             end
         end
     end
     
     if lastTargetPlayer and lastTargetPlayer ~= targetPlayer then
-        if lastTargetPlayer.Character and lastTargetPlayer.Character:FindFirstChild("ESPHighlight") then
-            applyESP(lastTargetPlayer)
+        if lastTargetPlayer.Character then
+            local highlight = lastTargetPlayer.Character:FindFirstChild("ESPHighlight")
+            if highlight and highlight:IsA("Highlight") then
+                applyESP(lastTargetPlayer)
+            end
         end
     end
     
