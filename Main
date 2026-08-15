@@ -33,6 +33,8 @@ getgenv().SilentAimSettings = {
     IgnoreInmates = false,
     IgnoreGuards = false,
     IgnoreCriminals = false,
+    HostileCheck = false,
+    TrespassCheck = false,
     TargetOnPlayer = nil
 }
 
@@ -84,12 +86,30 @@ local function isValidTarget(plr)
         if player.Team and plr.Team == player.Team then return false end
     end
     
-if Settings.IgnoreInmates and plr.Team and plr.Team.Name == "Inmates" then return false end
-if Settings.IgnoreGuards and plr.Team and plr.Team.Name == "Guards" then return false end
-if Settings.IgnoreCriminals and plr.Team and plr.Team.Name == "Criminals" then return false end
+    if Settings.IgnoreInmates and plr.Team and plr.Team.Name == "Inmates" then return false end
+    if Settings.IgnoreGuards and plr.Team and plr.Team.Name == "Guards" then return false end
+    if Settings.IgnoreCriminals and plr.Team and plr.Team.Name == "Criminals" then return false end
     
     if Settings.VisibleCheck then
         if not isVisible(plr.Character) then return false end
+    end
+    
+    if Settings.HostileCheck or Settings.TrespassCheck then
+        local isGuard = player.Team and player.Team.Name == "Guards"
+        local isInmate = plr.Team and plr.Team.Name == "Inmates"
+        
+        if isGuard and isInmate then
+            local hostile = plr.Character:GetAttribute("Hostile")
+            local trespass = plr.Character:GetAttribute("Trespassing")
+            
+            if Settings.HostileCheck and Settings.TrespassCheck then
+                if not hostile and not trespass then return false end
+            elseif Settings.HostileCheck then
+                if not hostile then return false end
+            elseif Settings.TrespassCheck then
+                if not trespass then return false end
+            end
+        end
     end
     
     return true
