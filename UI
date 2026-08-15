@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.5",
+  SubTitle = "by 2knw | Version 0.0.6",
   SaveFolder = "PrecisionPrisonLife" 
 })
 
