@@ -217,20 +217,9 @@ local function getSpreadDirection(Origin, OriginalDirection, HitPart)
     if OriginalDistance == 0 then OriginalDistance = 1000 end
     
     local PartSize = HitPart.Size
-    
-    local spreadMultiplier = 0.2
-    
-    local character = player.Character
-    if character then
-        local tool = character:FindFirstChildOfClass("Tool")
-        if tool and tool.Name == "Remington 870" then
-            spreadMultiplier = 0.5
-        end
-    end
-    
-    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2) * spreadMultiplier
-    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2) * spreadMultiplier
-    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2) * spreadMultiplier
+    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2)
+    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2)
+    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2)
     
     local RandomOffset = Vector3.new(SpreadX, SpreadY, SpreadZ)
     if RandomOffset.Magnitude == 0 then
