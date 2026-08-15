@@ -199,15 +199,6 @@ AimbotTab:AddToggle({
 })
 
 AimbotTab:AddToggle({
-  Name = "Auto Shoot",
-  Description = "Automatically shoots when a target is found",
-  Default = false,
-  Callback = function(v)
-    getgenv().SilentAimSettings.AutoShoot = v
-  end
-})
-
-AimbotTab:AddToggle({
   Name = "Wall Check",
   Description = "Ignore Players behind Walls",
   Default = true,
