@@ -6,8 +6,8 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.1",
-  SaveFolder = "PrecisionBreakout"
+  SubTitle = "by 2knw | Version 0.0.2",
+  SaveFolder = "PrecisionPrisonLife" 
 })
 
 Window:AddMinimizeButton({
@@ -42,7 +42,7 @@ MainTab:AddSlider({
   Increase = 1,
   Default = 0,
   Callback = function(Value)
-    SPINBOT_SPEED = Value
+    getgenv().SilentAimSettings.SpinbotSpeed = Value
   end
 })
 
@@ -193,9 +193,7 @@ AimbotTab:AddToggle({
   Name = "Silent Aim",
   Default = true,
   Callback = function(v)
-    AIMBOT_ENABLED = v
     getgenv().SilentAimSettings.Enabled = v
-    if _G.fovCircle then _G.fovCircle.Visible = v end
   end
 })
 
@@ -234,19 +232,19 @@ AimbotTab:AddToggle({
 AimbotTab:AddToggle({
   Name = "Ignore Prisoners",
   Default = false,
-  Callback = function(v) IGNORE_PRISONERS = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnorePrisoners = v end
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Guards",
   Default = false,
-  Callback = function(v) IGNORE_GUARDS = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreGuards = v end
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Escaped",
   Default = false,
-  Callback = function(v) IGNORE_ESCAPED = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreEscaped = v end
 })
 
 AimbotTab:AddSlider({
@@ -288,15 +286,15 @@ local targetDropdown = AimbotTab:AddDropdown({
     Default = "None",
     Callback = function(Value)
         if Value == "None" then
-            TARGET_ON_PLAYER = nil
+            getgenv().SilentAimSettings.TargetOnPlayer = nil
         else
-            TARGET_ON_PLAYER = Value
+            getgenv().SilentAimSettings.TargetOnPlayer = Value
         end
     end
 })
 
 AimbotTab:AddButton({"Reset Target", function()
-    TARGET_ON_PLAYER = nil
+    getgenv().SilentAimSettings.TargetOnPlayer = nil
     pcall(function() targetDropdown:Destroy() end)
     
     local newOptions = {"None"}
@@ -313,9 +311,9 @@ AimbotTab:AddButton({"Reset Target", function()
         Default = "None",
         Callback = function(Value)
             if Value == "None" then
-                TARGET_ON_PLAYER = nil
+                getgenv().SilentAimSettings.TargetOnPlayer = nil
             else
-                TARGET_ON_PLAYER = Value
+                getgenv().SilentAimSettings.TargetOnPlayer = Value
             end
         end
     })
@@ -327,7 +325,7 @@ AimbotTab:AddDropdown({
   Name = "FOV Color",
   Description = "Choose the FOV circle color",
   Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White", "Rainbow"},
-  Default = "Black",
+  Default = "White",
   Callback = function(Value)
     setFOVColor(Value)
   end
@@ -337,10 +335,7 @@ AimbotTab:AddToggle({
   Name = "Hide FOV Circle",
   Default = false,
   Callback = function(v)
-    HIDE_FOV_CIRCLE = v
-    if _G.toggleFOVCircle then
-      _G.toggleFOVCircle(v)
-    end
+    toggleFOVCircle(v)
   end
 })
 
@@ -351,8 +346,8 @@ AimbotTab:AddSlider({
   Increase = 10,
   Default = 100,
   Callback = function(Value)
-    FOV_RADIUS = Value
-    if _G.fovCircle then _G.fovCircle.Size = UDim2.new(0, Value*2, 0, Value*2) end
+    getgenv().SilentAimSettings.FOVRadius = Value
+    if fovCircle then fovCircle.Radius = Value end
   end
 })
 
@@ -363,8 +358,8 @@ VisualsTab:AddToggle({
   Name = "ESP",
   Default = false,
   Callback = function(v)
-    ESP_ENABLED = v
-    if _G.refreshESP then _G.refreshESP() end
+    getgenv().SilentAimSettings.ESPEnabled = v
+    updateESP()
   end
 })
 
@@ -373,8 +368,8 @@ VisualsTab:AddToggle({
   Description = "Hides the names above players when ESP is active",
   Default = false,
   Callback = function(v)
-    ESP_NAMES_ENABLED = not v  
-    if _G.refreshESP then _G.refreshESP() end
+    getgenv().SilentAimSettings.ESPNamesEnabled = not v
+    updateESP()
   end
 })
 
@@ -408,7 +403,7 @@ VisualsTab:AddDropdown({
 VisualsTab:AddDropdown({
   Name = "Skyboxes",
   Description = "Choose your skybox",
-Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox", "LUK Skybox", "LUK Members Skybox"},
+  Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox", "LUK Skybox", "LUK Members Skybox"},
   Default = "None",
   Callback = function(Value)
     setSkybox(Value)
