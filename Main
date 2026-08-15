@@ -1,4 +1,4 @@
- -- Main Script Precision | Prison Life
+-- Main Script Precision | Prison Life
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -217,9 +217,9 @@ local function getSpreadDirection(Origin, OriginalDirection, HitPart)
     if OriginalDistance == 0 then OriginalDistance = 1000 end
     
     local PartSize = HitPart.Size
-    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2)
-    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2)
-    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2)
+    local SpreadX = (math.random() - 0.2) * (PartSize.X + 2)
+    local SpreadY = (math.random() - 0.2) * (PartSize.Y + 2)
+    local SpreadZ = (math.random() - 0.2) * (PartSize.Z + 2)
     
     local RandomOffset = Vector3.new(SpreadX, SpreadY, SpreadZ)
     if RandomOffset.Magnitude == 0 then
