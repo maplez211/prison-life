@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.4",
+  SubTitle = "by 2knw | Version 0.0.5",
   SaveFolder = "PrecisionPrisonLife" 
 })
 
@@ -201,7 +201,7 @@ AimbotTab:AddToggle({
 AimbotTab:AddToggle({
   Name = "Wall Check",
   Description = "Ignore Players behind Walls",
-  Default = false,
+  Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.VisibleCheck = v
   end
@@ -210,7 +210,7 @@ AimbotTab:AddToggle({
 AimbotTab:AddToggle({
   Name = "Team Check",
   Description = "Ignore Players on your Team",
-  Default = false,
+  Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.TeamCheck = v
   end
@@ -275,7 +275,7 @@ AimbotTab:AddSlider({
   Min = 0,
   Max = 100,
   Increase = 1,
-  Default = 100,
+  Default = 50,
   Callback = function(Value)
     getgenv().SilentAimSettings.Smoothing = Value / 100
   end
