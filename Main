@@ -217,27 +217,41 @@ local function getSpreadDirection(Origin, OriginalDirection, HitPart)
     if OriginalDistance == 0 then OriginalDistance = 1000 end
     
     local PartSize = HitPart.Size
-    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2)
-    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2)
-    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2)
+    
+    local spreadMultiplier = 0.2
+    
+    local character = player.Character
+    if character then
+        local tool = character:FindFirstChildOfClass("Tool")
+        if tool and tool.Name == "Remington 870" then
+            spreadMultiplier = 0.5
+        end
+    end
+    
+    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2) * spreadMultiplier
+    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2) * spreadMultiplier
+    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2) * spreadMultiplier
     
     local RandomOffset = Vector3.new(SpreadX, SpreadY, SpreadZ)
     if RandomOffset.Magnitude == 0 then
         RandomOffset = Vector3.new(0.1, 0.1, 0.1)
     end
     
-    local BasePosition = smoothedTargetPosition or HitPart.Position
-    local TargetPosition = BasePosition + RandomOffset
-    
-    local NewDirection = (TargetPosition - Origin)
-    local NewDistance = NewDirection.Magnitude
-    
-    if NewDistance == 0 then
-        return OriginalDirection
+    if smoothedTargetPosition then
+        local TargetPosition = smoothedTargetPosition + RandomOffset
+        
+        local NewDirection = (TargetPosition - Origin)
+        local NewDistance = NewDirection.Magnitude
+        
+        if NewDistance == 0 then
+            return OriginalDirection
+        end
+        
+        local FinalDistance = math.max(OriginalDistance, NewDistance)
+        return NewDirection.Unit * FinalDistance
     end
     
-    local FinalDistance = math.max(OriginalDistance, NewDistance)
-    return NewDirection.Unit * FinalDistance
+    return OriginalDirection
 end
 
 local function isLocalPlayerShooting(Arguments, Method, Origin, OriginalDirection)
@@ -303,6 +317,13 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                     if HitPart and HitPart.Parent then
                         Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
                         return oldNamecall(unpack(Arguments))
+                    else
+                        local naturalAimPoint = Origin + A_Ray.Direction.Unit * A_Ray.Direction.Magnitude
+                        if smoothedTargetPosition then
+                            smoothedTargetPosition = smoothedTargetPosition:Lerp(naturalAimPoint, Settings.Smoothing)
+                        else
+                            smoothedTargetPosition = naturalAimPoint
+                        end
                     end
                 end
             end
@@ -316,6 +337,13 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                     if HitPart and HitPart.Parent then
                         Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
                         return oldNamecall(unpack(Arguments))
+                    else
+                        local naturalAimPoint = Origin + A_Ray.Direction.Unit * A_Ray.Direction.Magnitude
+                        if smoothedTargetPosition then
+                            smoothedTargetPosition = smoothedTargetPosition:Lerp(naturalAimPoint, Settings.Smoothing)
+                        else
+                            smoothedTargetPosition = naturalAimPoint
+                        end
                     end
                 end
             end
@@ -329,6 +357,13 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                     if HitPart and HitPart.Parent then
                         Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
                         return oldNamecall(unpack(Arguments))
+                    else
+                        local naturalAimPoint = Origin + A_Ray.Direction.Unit * A_Ray.Direction.Magnitude
+                        if smoothedTargetPosition then
+                            smoothedTargetPosition = smoothedTargetPosition:Lerp(naturalAimPoint, Settings.Smoothing)
+                        else
+                            smoothedTargetPosition = naturalAimPoint
+                        end
                     end
                 end
             end
@@ -342,6 +377,13 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                     if HitPart and HitPart.Parent then
                         Arguments[3] = getSpreadDirection(A_Origin, OriginalDirection, HitPart)
                         return oldNamecall(unpack(Arguments))
+                    else
+                        local naturalAimPoint = A_Origin + OriginalDirection.Unit * OriginalDirection.Magnitude
+                        if smoothedTargetPosition then
+                            smoothedTargetPosition = smoothedTargetPosition:Lerp(naturalAimPoint, Settings.Smoothing)
+                        else
+                            smoothedTargetPosition = naturalAimPoint
+                        end
                     end
                 end
             end
@@ -371,8 +413,6 @@ RunService.RenderStepped:Connect(function()
         else
             smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, Settings.Smoothing)
         end
-    else
-        smoothedTargetPosition = nil
     end
 end)
 
