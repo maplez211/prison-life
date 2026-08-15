@@ -247,6 +247,20 @@ AimbotTab:AddToggle({
   Callback = function(v) getgenv().SilentAimSettings.IgnoreCriminals = v end
 })
 
+AimbotTab:AddToggle({
+  Name = "Hostile Check",
+  Description = "Only target hostile inmates (Guards only)",
+  Default = false,
+  Callback = function(v) getgenv().SilentAimSettings.HostileCheck = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Trespass Check",
+  Description = "Only target trespassing inmates (Guards only)",
+  Default = false,
+  Callback = function(v) getgenv().SilentAimSettings.TrespassCheck = v end
+})
+
 AimbotTab:AddSlider({
   Name = "Smoothing",
   Min = 0,
