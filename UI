@@ -230,9 +230,9 @@ AimbotTab:AddToggle({
 })
 
 AimbotTab:AddToggle({
-  Name = "Ignore Prisoners",
+  Name = "Ignore Inmates",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.IgnorePrisoners = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreInmates = v end
 })
 
 AimbotTab:AddToggle({
@@ -242,9 +242,9 @@ AimbotTab:AddToggle({
 })
 
 AimbotTab:AddToggle({
-  Name = "Ignore Escaped",
+  Name = "Ignore Criminals",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.IgnoreEscaped = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreCriminals = v end
 })
 
 AimbotTab:AddSlider({
