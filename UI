@@ -370,7 +370,6 @@ AimbotTab:AddSlider({
   Default = 100,
   Callback = function(Value)
     getgenv().SilentAimSettings.FOVRadius = Value
-    if fovCircle then fovCircle.Radius = Value end
   end
 })
 
