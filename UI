@@ -1,14 +1,16 @@
 -- UI Script Precision | Prison Life
-local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
+local redzlib = loadstring(game:HttpGet("https://github.com/maplez211/Loader/blob/main/redzidk"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.7",
-  SaveFolder = "PrecisionPrisonLife" 
+  SubTitle = "by 2knw | Version 0.0.8",
+  SaveFolder = "PrecisionPrisonLife"
 })
+
+redzlib:SetTheme("Purple")
 
 Window:AddMinimizeButton({
     Button = { Image = "rbxassetid://129533569136714", BackgroundTransparency = 1 },
