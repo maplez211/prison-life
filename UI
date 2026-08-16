@@ -1,5 +1,5 @@
 -- UI Script Precision | Prison Life
-local redzlib = loadstring(game:HttpGet("https://github.com/maplez211/Loader/blob/main/redzidk"))()
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/Loader/main/redzidk"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
