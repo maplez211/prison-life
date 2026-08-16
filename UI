@@ -8,9 +8,9 @@ local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
   SubTitle = "by 2knw | Version 0.0.8",
   SaveFolder = "PrecisionPrisonLife"
+  Theme = "Purple"
 })
 
-redzlib:SetTheme("Purple")
 
 Window:AddMinimizeButton({
     Button = { Image = "rbxassetid://129533569136714", BackgroundTransparency = 1 },
