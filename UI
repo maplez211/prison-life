@@ -84,27 +84,7 @@ PlayersTab:AddButton({"Update Players List", function()
         end
     end
     
-    pcall(function() playerDropdown:Destroy() end)
-    
-    playerDropdown = PlayersTab:AddDropdown({
-        Name = "Teleport to Player",
-        Description = "Select a player to teleport to them",
-        Options = options,
-        Default = "Select a player...",
-        Callback = function(Value)
-            if Value == "Select a player..." then return end
-            local target = Players:FindFirstChild(Value)
-            if target and target.Character then
-                local hrp = target.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local c = player.Character
-                    if c and c:FindFirstChild("HumanoidRootPart") then
-                        c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
-                    end
-                end
-            end
-        end
-    })
+    playerDropdown:Set(options)
 end})
 
 -- ============ VIEW PLAYER SECTION ============
@@ -172,18 +152,7 @@ PlayersTab:AddButton({"Update Players List", function()
         end
     end
     
-    pcall(function() viewPlayerDropdown:Destroy() end)
-    
-    viewPlayerDropdown = PlayersTab:AddDropdown({
-        Name = "View Player",
-        Description = "Select a player to spectate",
-        Options = options,
-        Default = "Select a player...",
-        Callback = function(Value)
-            if Value == "Select a player..." then return end
-            SPECTATE_PLAYER = Value
-        end
-    })
+    viewPlayerDropdown:Set(options)
 end})
 
 -- ============ AIM TAB ============
@@ -318,7 +287,6 @@ local targetDropdown = AimbotTab:AddDropdown({
 
 AimbotTab:AddButton({"Reset Target", function()
     getgenv().SilentAimSettings.TargetOnPlayer = nil
-    pcall(function() targetDropdown:Destroy() end)
     
     local newOptions = {"None"}
     for _, plr in ipairs(Players:GetPlayers()) do
@@ -327,19 +295,7 @@ AimbotTab:AddButton({"Reset Target", function()
         end
     end
     
-    targetDropdown = AimbotTab:AddDropdown({
-        Name = "Target On",
-        Description = "Select a specific player to target",
-        Options = newOptions,
-        Default = "None",
-        Callback = function(Value)
-            if Value == "None" then
-                getgenv().SilentAimSettings.TargetOnPlayer = nil
-            else
-                getgenv().SilentAimSettings.TargetOnPlayer = Value
-            end
-        end
-    })
+    targetDropdown:Set(newOptions)
 end})
 
 local FOVSection = AimbotTab:AddSection({"FOV"})
