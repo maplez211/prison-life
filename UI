@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.0.8",
+  SubTitle = "by 2knw | Version 0.1.0",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -43,7 +43,8 @@ MainTab:AddSlider({
   Default = 0,
   Callback = function(Value)
     getgenv().SilentAimSettings.SpinbotSpeed = Value
-  end
+  end,
+  Flag = "SpinbotSpeedValue"
 })
 
 -- ============ PLAYERS TAB ============
@@ -166,7 +167,8 @@ AimbotTab:AddToggle({
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.Enabled = v
-  end
+  end,
+  Flag = "SilentAimEnabled"
 })
 
 AimbotTab:AddToggle({
@@ -175,7 +177,8 @@ AimbotTab:AddToggle({
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.VisibleCheck = v
-  end
+  end,
+  Flag = "WallCheck"
 })
 
 AimbotTab:AddToggle({
@@ -184,7 +187,8 @@ AimbotTab:AddToggle({
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.TeamCheck = v
-  end
+  end,
+  Flag = "TeamCheck"
 })
 
 AimbotTab:AddToggle({
@@ -193,42 +197,48 @@ AimbotTab:AddToggle({
   Default = true,
   Callback = function(v)
     getgenv().SilentAimSettings.FriendCheck = v
-  end
+  end,
+  Flag = "FriendCheck"
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Inmates",
   Description = "Ignore Inmate Players",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.IgnoreInmates = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreInmates = v end,
+  Flag = "IgnoreInmates"
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Guards",
   Description = "Ignore Guard Players",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.IgnoreGuards = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreGuards = v end,
+  Flag = "IgnoreGuards"
 })
 
 AimbotTab:AddToggle({
   Name = "Ignore Criminals",
   Description = "Ignore Criminal Players",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.IgnoreCriminals = v end
+  Callback = function(v) getgenv().SilentAimSettings.IgnoreCriminals = v end,
+  Flag = "IgnoreCriminals"
 })
 
 AimbotTab:AddToggle({
   Name = "Hostile Check",
   Description = "Only target hostile inmates (Guards only)",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.HostileCheck = v end
+  Callback = function(v) getgenv().SilentAimSettings.HostileCheck = v end,
+  Flag = "HostileCheck"
 })
 
 AimbotTab:AddToggle({
   Name = "Trespass Check",
   Description = "Only target trespassing inmates (Guards only)",
   Default = false,
-  Callback = function(v) getgenv().SilentAimSettings.TrespassCheck = v end
+  Callback = function(v) getgenv().SilentAimSettings.TrespassCheck = v end,
+  Flag = "TrespassCheck"
 })
 
 AimbotTab:AddDropdown({
@@ -238,7 +248,8 @@ AimbotTab:AddDropdown({
   Default = "HumanoidRootPart",
   Callback = function(Value)
     getgenv().SilentAimSettings.TargetPart = Value
-  end
+  end,
+  Flag = "TargetPart"
 })
 
 AimbotTab:AddSlider({
@@ -249,7 +260,8 @@ AimbotTab:AddSlider({
   Default = 50,
   Callback = function(Value)
     getgenv().SilentAimSettings.Smoothing = Value / 100
-  end
+  end,
+  Flag = "SmoothingValue"
 })
 
 AimbotTab:AddSlider({
@@ -260,7 +272,8 @@ AimbotTab:AddSlider({
   Default = 100,
   Callback = function(Value)
     getgenv().SilentAimSettings.HitChance = Value
-  end
+  end,
+  Flag = "HitChanceValue"
 })
 
 -- ============ TARGET ON SECTION ============
@@ -291,6 +304,7 @@ AimbotTab:AddButton({"Reset Target", function()
     targetDropdown:Set(newOptions)  
 end})
 
+
 local FOVSection = AimbotTab:AddSection({"FOV"})
 
 AimbotTab:AddDropdown({
@@ -300,7 +314,8 @@ AimbotTab:AddDropdown({
   Default = "White",
   Callback = function(Value)
     setFOVColor(Value)
-  end
+  end,
+  Flag = "FOVColorSelected"
 })
 
 AimbotTab:AddToggle({
@@ -308,7 +323,8 @@ AimbotTab:AddToggle({
   Default = false,
   Callback = function(v)
     toggleFOVCircle(v)
-  end
+  end,
+  Flag = "FOVCircleHidden"
 })
 
 AimbotTab:AddSlider({
@@ -319,7 +335,8 @@ AimbotTab:AddSlider({
   Default = 100,
   Callback = function(Value)
     getgenv().SilentAimSettings.FOVRadius = Value
-  end
+  end,
+  Flag = "FOVSizeValue"
 })
 
 -- ============ VISUALS TAB ============
@@ -331,7 +348,8 @@ VisualsTab:AddToggle({
   Callback = function(v)
     getgenv().SilentAimSettings.ESPEnabled = v
     updateESP()
-  end
+  end,
+  Flag = "ESPEnabled"
 })
 
 VisualsTab:AddToggle({
@@ -341,7 +359,8 @@ VisualsTab:AddToggle({
   Callback = function(v)
     getgenv().SilentAimSettings.ESPNamesEnabled = not v
     updateESP()
-  end
+  end,
+  Flag = "ESPNamesHidden"
 })
 
 local CustomizationSection = VisualsTab:AddSection({"Customization"})
@@ -358,7 +377,8 @@ VisualsTab:AddToggle({
         game:GetService("Lighting").FogEnd = 5000
         game:GetService("Lighting").FogStart = 0
     end
-  end
+  end,
+  Flag = "FogRemoved"
 })
 
 VisualsTab:AddDropdown({
@@ -368,7 +388,8 @@ VisualsTab:AddDropdown({
   Default = "Default",
   Callback = function(Value)
     setFogColor(Value)
-  end
+  end,
+  Flag = "FogColorSelected"
 })
 
 VisualsTab:AddDropdown({
@@ -378,7 +399,8 @@ VisualsTab:AddDropdown({
   Default = "None",
   Callback = function(Value)
     setSkybox(Value)
-  end
+  end,
+  Flag = "SkyboxSelected"
 })
 
 -- ============ TELEPORTS TAB ============
@@ -396,3 +418,50 @@ for _, tp in ipairs(teleports) do
     end
   end})
 end
+
+
+local function SyncSavedValues()
+    getgenv().SilentAimSettings.SpinbotSpeed = redzlib.Flags.SpinbotSpeedValue or 0
+    getgenv().SilentAimSettings.Enabled = redzlib.Flags.SilentAimEnabled or true
+    getgenv().SilentAimSettings.VisibleCheck = redzlib.Flags.WallCheck or true
+    getgenv().SilentAimSettings.TeamCheck = redzlib.Flags.TeamCheck or true
+    getgenv().SilentAimSettings.FriendCheck = redzlib.Flags.FriendCheck or true
+    getgenv().SilentAimSettings.IgnoreInmates = redzlib.Flags.IgnoreInmates or false
+    getgenv().SilentAimSettings.IgnoreGuards = redzlib.Flags.IgnoreGuards or false
+    getgenv().SilentAimSettings.IgnoreCriminals = redzlib.Flags.IgnoreCriminals or false
+    getgenv().SilentAimSettings.HostileCheck = redzlib.Flags.HostileCheck or false
+    getgenv().SilentAimSettings.TrespassCheck = redzlib.Flags.TrespassCheck or false
+    getgenv().SilentAimSettings.TargetPart = redzlib.Flags.TargetPart or "HumanoidRootPart"
+    getgenv().SilentAimSettings.Smoothing = (redzlib.Flags.SmoothingValue or 50) / 100
+    getgenv().SilentAimSettings.HitChance = redzlib.Flags.HitChanceValue or 100
+    getgenv().SilentAimSettings.FOVRadius = redzlib.Flags.FOVSizeValue or 100
+    getgenv().SilentAimSettings.ESPEnabled = redzlib.Flags.ESPEnabled or false
+    getgenv().SilentAimSettings.ESPNamesEnabled = not (redzlib.Flags.ESPNamesHidden or false)
+    
+    local savedFOVColor = redzlib.Flags.FOVColorSelected or "White"
+    setFOVColor(savedFOVColor)
+    
+    local savedSkybox = redzlib.Flags.SkyboxSelected or "None"
+    setSkybox(savedSkybox)
+    
+    local savedFogColor = redzlib.Flags.FogColorSelected or "Default"
+    setFogColor(savedFogColor)
+    
+    local fogRemoved = redzlib.Flags.FogRemoved or false
+    if fogRemoved then
+        game:GetService("Lighting").FogEnd = 100000
+        game:GetService("Lighting").FogStart = 100000
+    else
+        game:GetService("Lighting").FogEnd = 5000
+        game:GetService("Lighting").FogStart = 0
+    end
+    
+    local fovHidden = redzlib.Flags.FOVCircleHidden or false
+    toggleFOVCircle(fovHidden)
+    
+    if redzlib.Flags.ESPEnabled then
+        updateESP()
+    end
+end
+
+SyncSavedValues()
