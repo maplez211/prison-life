@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.1",
+  SubTitle = "by 2knw | Version 0.1.2",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -407,7 +407,21 @@ VisualsTab:AddDropdown({
 local TeleportsSection = TeleportsTab:AddSection({"Teleports"})
 
 local teleports = {
-  {"Nexus", Vector3.new(116, 3, 245)},
+  {"Nexus 1", Vector3.new(864, 100, 2406)},
+  {"Nexus 2", Vector3.new(969, 100, 2289)},
+  {"Cells", Vector3.new(889, 100, 2500)},
+  {"Cafeteria", Vector3.new(964, 103, 2286)},
+  {"Kitchen", Vector3.new(965, 100, 2240)},
+  {"Yard", Vector3.new(801, 98, 2499)},
+  {"Armory ", Vector3.new(803, 108, 2257)},
+  {"Break Room", Vector3.new(794, 101, 2246)},
+  {"Entrance", Vector3.new(737, 100, 2287)},
+  {"Front Wall 1", Vector3.new(510, 122, 2327)},
+  {"Front Wall 2", Vector3.new(505, 122, 2143)},
+  {"Guard Tower 1", Vector3.new(825, 126, 2072)},
+  {"Guard Tower 2", Vector3.new(816, 126, 2582)},
+  {"Sewage", Vector3.new(917, 79, 2102)},
+  {"Escape the Prison", Vector3.new(840, 98, 2598)},
 }
 
 for _, tp in ipairs(teleports) do
