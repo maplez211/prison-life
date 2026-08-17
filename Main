@@ -1,8 +1,11 @@
 -- Main Script Precision | Prison Life
 
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/Loader/main/redzidk"))()
 local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+
+task.wait(1)
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local HttpService = game:GetService("HttpService")
@@ -42,8 +45,6 @@ local currentSkybox = nil
 local smoothedTargetPosition = nil
 local currentTarget = nil
 local lastTargetPlayer = nil
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
 
 -- ============ FOV CIRCLE ============
 local fovCircle = Drawing.new("Circle")
