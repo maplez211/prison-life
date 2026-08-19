@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.2",
+  SubTitle = "by 2knw | Version 0.1.3",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -361,6 +361,27 @@ VisualsTab:AddToggle({
     updateESP()
   end,
   Flag = "ESPNamesHidden"
+})
+
+VisualsTab:AddToggle({
+  Name = "Skeleton ESP",
+  Default = false,
+  Callback = function(v) espSettings.SkeletonEnabled = v end,
+  Flag = "SkeletonESP"
+})
+
+VisualsTab:AddToggle({
+  Name = "Health Bar ESP",
+  Default = false,
+  Callback = function(v) espSettings.HealthBarEnabled = v end,
+  Flag = "HealthBarESP"
+})
+
+VisualsTab:AddToggle({
+  Name = "Target Tracer",
+  Default = false,
+  Callback = function(v) espSettings.TracerTargetEnabled = v end,
+  Flag = "TargetTracer"
 })
 
 local CustomizationSection = VisualsTab:AddSection({"Customization"})
