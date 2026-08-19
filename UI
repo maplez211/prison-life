@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.3",
+  SubTitle = "by 2knw | Version 0.1.4",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -347,7 +347,6 @@ VisualsTab:AddToggle({
   Default = false,
   Callback = function(v)
     getgenv().SilentAimSettings.ESPEnabled = v
-    updateESP()
   end,
   Flag = "ESPEnabled"
 })
@@ -358,7 +357,6 @@ VisualsTab:AddToggle({
   Default = false,
   Callback = function(v)
     getgenv().SilentAimSettings.ESPNamesEnabled = not v
-    updateESP()
   end,
   Flag = "ESPNamesHidden"
 })
