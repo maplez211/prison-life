@@ -63,168 +63,110 @@ local function toggleFOVCircle(hide)
     fovCircle.Visible = not hide and Settings.Enabled and Settings.FOVEnabled
 end
 
--- ============ TRACER SYSTEM ============
-local TracerDrawings = {}
+-- ============ BEAM SYSTEM ============
+local targetBeam = nil
 
-local function getTracerOrigin()
-    local origin = Settings.TracerOrigin
-    if origin == "Bottom" then
-        return Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
-    elseif origin == "Top" then
-        return Vector2.new(camera.ViewportSize.X / 2, 0)
-    elseif origin == "Mouse" then
-        return UserInputService:GetMouseLocation()
-    else 
-        return Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-    end
-end
-
-local function createTracer(plr)
-    if TracerDrawings[plr] then
-        TracerDrawings[plr]:Remove()
+local function createTargetBeam()
+    if targetBeam then
+        targetBeam:Destroy()
+        targetBeam = nil
     end
     
-    local tracer = Drawing.new("Line")
-    tracer.Visible = false
-    tracer.Color = Settings.TracerColor
-    tracer.Thickness = Settings.TracerThickness
-    tracer.Transparency = Settings.TracerTransparency
+    local beam = Instance.new("Beam")
+    beam.Name = "TargetBeam"
+    beam.Color = ColorSequence.new(Color3.fromRGB(255, 105, 180)) -- Rosa
+    beam.Transparency = NumberSequence.new(0.2)
+    beam.Width0 = 0.4
+    beam.Width1 = 0.4
+    beam.FaceCamera = true
+    beam.Enabled = false
     
-    TracerDrawings[plr] = tracer
-    return tracer
+    local attachment0 = Instance.new("Attachment")
+    attachment0.Name = "BeamStart"
+    attachment0.Parent = workspace.Terrain
+    
+    local attachment1 = Instance.new("Attachment")
+    attachment1.Name = "BeamEnd"
+    attachment1.Parent = workspace.Terrain
+    
+    beam.Attachment0 = attachment0
+    beam.Attachment1 = attachment1
+    beam.Parent = workspace.Terrain
+    
+    targetBeam = {
+        Beam = beam,
+        Start = attachment0,
+        End = attachment1
+    }
+    
+    return targetBeam
 end
 
-local function removeTracer(plr)
-    if TracerDrawings[plr] then
-        TracerDrawings[plr]:Remove()
-        TracerDrawings[plr] = nil
-    end
-end
-
-local function removeAllTracers()
-    for plr, tracer in pairs(TracerDrawings) do
-        if tracer then
-            tracer:Remove()
+local function removeTargetBeam()
+    if targetBeam then
+        if targetBeam.Beam then
+            targetBeam.Beam:Destroy()
         end
+        if targetBeam.Start then
+            targetBeam.Start:Destroy()
+        end
+        if targetBeam.End then
+            targetBeam.End:Destroy()
+        end
+        targetBeam = nil
     end
-    TracerDrawings = {}
 end
 
-local function updateTracers()
+local function updateTargetBeam()
     if not Settings.TracerEnabled then
-        for _, tracer in pairs(TracerDrawings) do
-            tracer.Visible = false
-        end
+        removeTargetBeam()
         return
     end
     
-    local origin = getTracerOrigin()
+    if not currentTarget or not currentTarget.Parent then
+        removeTargetBeam()
+        return
+    end
     
-    if Settings.TracerOnlyTarget then
-        -- Mostrar tracer apenas no alvo atual
-        for plr, tracer in pairs(TracerDrawings) do
-            local isTarget = false
-            
-            if currentTarget and currentTarget.Parent then
-                local targetPlayer = Players:GetPlayerFromCharacter(currentTarget.Parent)
-                if targetPlayer == plr then
-                    isTarget = true
-                end
-            end
-            
-            if isTarget and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                local hrp = plr.Character.HumanoidRootPart
-                local screenPos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-                
-                if onScreen then
-                    tracer.From = origin
-                    tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-                    tracer.Color = Color3.fromRGB(255, 182, 255) -- Rosa para o target
-                    tracer.Visible = true
-                else
-                    tracer.Visible = false
-                end
-            else
-                tracer.Visible = false
-            end
-        end
-    elseif Settings.TracerAllPlayers then
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                local tracer = TracerDrawings[plr]
-                if not tracer then
-                    tracer = createTracer(plr)
-                end
-                
-                if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                    local hrp = plr.Character.HumanoidRootPart
-                    local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
-                    
-                    if humanoid and humanoid.Health > 0 then
-                        local screenPos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-                        
-                        if onScreen then
-                            tracer.From = origin
-                            tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-                            
-                            local isTarget = false
-                            if currentTarget and currentTarget.Parent then
-                                local targetPlayer = Players:GetPlayerFromCharacter(currentTarget.Parent)
-                                if targetPlayer == plr then
-                                    isTarget = true
-                                end
-                            end
-                            
-                            if isTarget then
-                                tracer.Color = Color3.fromRGB(255, 182, 255) -- Rosa
-                            else
-                                tracer.Color = Settings.TracerColor
-                            end
-                            
-                            tracer.Visible = true
-                        else
-                            tracer.Visible = false
-                        end
-                    else
-                        tracer.Visible = false
-                    end
-                else
-                    tracer.Visible = false
-                end
-            end
-        end
+    local targetChar = currentTarget.Parent
+    if not targetChar:IsA("Model") then
+        removeTargetBeam()
+        return
+    end
+    
+    local targetPlayer = Players:GetPlayerFromCharacter(targetChar)
+    if not targetPlayer or not targetPlayer.Character then
+        removeTargetBeam()
+        return
+    end
+    
+    local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local localChar = player.Character
+    local localHRP = localChar and localChar:FindFirstChild("HumanoidRootPart")
+    
+    if not targetHRP or not localHRP then
+        removeTargetBeam()
+        return
+    end
+    
+    -- Criar beam se não existir
+    if not targetBeam then
+        targetBeam = createTargetBeam()
+    end
+    
+    if targetBeam then
+        targetBeam.Start.WorldPosition = localHRP.Position
+        targetBeam.End.WorldPosition = targetHRP.Position
+        targetBeam.Beam.Enabled = true
+        
+        targetBeam.Beam.Color = ColorSequence.new(Color3.fromRGB(255, 105, 180))
     end
 end
 
 function setTracerEnabled(enabled)
     Settings.TracerEnabled = enabled
     if not enabled then
-        removeAllTracers()
-    end
-end
-
-function setTracerOrigin(origin)
-    Settings.TracerOrigin = origin
-end
-
-function setTracerColor(color)
-    Settings.TracerColor = color
-    for _, tracer in pairs(TracerDrawings) do
-        tracer.Color = color
-    end
-end
-
-function setTracerThickness(thickness)
-    Settings.TracerThickness = thickness
-    for _, tracer in pairs(TracerDrawings) do
-        tracer.Thickness = thickness
-    end
-end
-
-function setTracerTransparency(transparency)
-    Settings.TracerTransparency = transparency
-    for _, tracer in pairs(TracerDrawings) do
-        tracer.Transparency = transparency
+        removeTargetBeam()
     end
 end
 
@@ -545,57 +487,111 @@ RunService.RenderStepped:Connect(function()
         smoothedTargetPosition = nil
     end
     
-    updateTracers()
+    updateTargetBeam()
+    
+    if Settings.ESPEnabled then
+        updateESPSync()
+    end
 end)
 
 -- ============ TARGET HIGHLIGHT ============
-RunService.RenderStepped:Connect(function()
-    local targetPlayer = nil
-    
-    if Settings.ESPEnabled and Settings.Enabled and currentTarget and currentTarget.Parent then
-        local targetChar = currentTarget.Parent
-        if targetChar:IsA("Model") then
-            local plr = Players:GetPlayerFromCharacter(targetChar)
-            local hum = targetChar:FindFirstChildOfClass("Humanoid")
-            local hrp = targetChar:FindFirstChild("HumanoidRootPart")
-            
-            if plr and hum and hrp and hum.Health > 0 and isValidTarget(plr) then
-                targetPlayer = plr
-            end
-        end
-    end
-    
-    if lastTargetPlayer and lastTargetPlayer ~= targetPlayer then
-        if lastTargetPlayer.Character then
-            local highlight = lastTargetPlayer.Character:FindFirstChild("ESPHighlight")
+local function resetAllHighlights()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            local highlight = plr.Character:FindFirstChild("ESPHighlight")
             if highlight and highlight:IsA("Highlight") then
-                applyESP(lastTargetPlayer) -- Reset para a cor normal
+                local teamColor = Color3.fromRGB(255, 0, 0)
+                if plr.TeamColor then teamColor = plr.TeamColor.Color
+                elseif plr.Team and plr.Team.TeamColor then teamColor = plr.Team.TeamColor.Color end
+                
+                highlight.FillColor = teamColor
+                highlight.OutlineColor = teamColor
+                highlight.FillTransparency = 0.85
+                highlight.OutlineTransparency = 0
             end
-        end
-    end
-    
-    if targetPlayer and targetPlayer.Character then
-        local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
-        if highlight and highlight:IsA("Highlight") then
-            highlight.FillColor = Color3.fromRGB(255, 182, 255)
-            highlight.OutlineColor = Color3.fromRGB(255, 182, 255)
-            highlight.FillTransparency = 0.5
-            highlight.OutlineTransparency = 0
-        end
-        
-        local head = targetPlayer.Character:FindFirstChild("Head")
-        if head then
-            local billboard = head:FindFirstChild("ESPNameTag")
-            if billboard then
-                local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
-                if label then
-                    label.TextColor3 = Color3.fromRGB(255, 182, 255)
+            
+            local head = plr.Character:FindFirstChild("Head")
+            if head then
+                local billboard = head:FindFirstChild("ESPNameTag")
+                if billboard then
+                    local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
+                    if label then
+                        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    end
                 end
             end
         end
     end
+end
+
+local function highlightTarget(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then return end
+    
+    local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+    if highlight and highlight:IsA("Highlight") then
+        highlight.FillColor = Color3.fromRGB(255, 105, 180) -- Rosa
+        highlight.OutlineColor = Color3.fromRGB(255, 105, 180)
+        highlight.FillTransparency = 0.4
+        highlight.OutlineTransparency = 0
+    end
+    
+    local head = targetPlayer.Character:FindFirstChild("Head")
+    if head then
+        local billboard = head:FindFirstChild("ESPNameTag")
+        if billboard then
+            local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
+            if label then
+                label.TextColor3 = Color3.fromRGB(255, 105, 180) -- Rosa
+                label.TextStrokeColor3 = Color3.fromRGB(150, 50, 100)
+            end
+        end
+    end
+end
+
+local function updateESPSync()
+    if not Settings.ESPEnabled then
+        return
+    end
+    
+    resetAllHighlights()
+    
+    local targetPlayer = nil
+    if Settings.Enabled and currentTarget and currentTarget.Parent then
+        local targetChar = currentTarget.Parent
+        if targetChar:IsA("Model") then
+            targetPlayer = Players:GetPlayerFromCharacter(targetChar)
+        end
+    end
+    
+    if targetPlayer and targetPlayer.Character then
+        highlightTarget(targetPlayer)
+    end
     
     lastTargetPlayer = targetPlayer
+end
+
+RunService.RenderStepped:Connect(function()
+    if Settings.ESPEnabled then
+        updateESPSync()
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.5) do
+        if Settings.ESPEnabled then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character then
+                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then
+                        applyESP(plr)
+                    else
+                        removeESP(plr)
+                    end
+                end
+            end
+        end
+    end
 end)
 
 -- ============ ESP AUTO REFRESH ============
