@@ -92,29 +92,18 @@ local function updateTargetBeam()
         return
     end
     
-    local targetChar = currentTarget.Parent
-    if not targetChar:IsA("Model") then
-        removeTargetBeam()
-        return
-    end
+    local targetPart = currentTarget
     
-    local targetPlayer = Players:GetPlayerFromCharacter(targetChar)
-    if not targetPlayer or not targetPlayer.Character then
-        removeTargetBeam()
-        return
-    end
-    
-    local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
     local localChar = player.Character
     local localHRP = localChar and localChar:FindFirstChild("HumanoidRootPart")
     
-    if not targetHRP or not localHRP then
+    if not targetPart or not localHRP then
         removeTargetBeam()
         return
     end
     
     if targetBeam then
-        if targetBeam.Start.Parent ~= localHRP or targetBeam.End.Parent ~= targetHRP then
+        if targetBeam.Start.Parent ~= localHRP or targetBeam.End.Parent ~= targetPart then
             removeTargetBeam()
         end
     end
@@ -124,7 +113,7 @@ local function updateTargetBeam()
         attachment0.Parent = localHRP
         
         local attachment1 = Instance.new("Attachment")
-        attachment1.Parent = targetHRP
+        attachment1.Parent = targetPart
         
         local beam = Instance.new("Beam")
         beam.Name = "TargetBeam"
@@ -134,7 +123,7 @@ local function updateTargetBeam()
         beam.FaceCamera = true
         beam.Width0 = 0.15
         beam.Width1 = 0.15
-        beam.Parent = targetChar
+        beam.Parent = targetPart.Parent
         
         targetBeam = {
             Beam = beam,
