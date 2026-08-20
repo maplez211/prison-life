@@ -66,42 +66,6 @@ end
 -- ============ BEAM SYSTEM ============
 local targetBeam = nil
 
-local function createTargetBeam()
-    if targetBeam then
-        targetBeam:Destroy()
-        targetBeam = nil
-    end
-    
-    local beam = Instance.new("Beam")
-    beam.Name = "TargetBeam"
-    beam.Color = ColorSequence.new(Color3.fromRGB(255, 105, 180)) -- Rosa
-    beam.Transparency = NumberSequence.new(0.2)
-    beam.Width0 = 0.4
-    beam.Width1 = 0.4
-    beam.FaceCamera = true
-    beam.Enabled = false
-    
-    local attachment0 = Instance.new("Attachment")
-    attachment0.Name = "BeamStart"
-    attachment0.Parent = workspace.Terrain
-    
-    local attachment1 = Instance.new("Attachment")
-    attachment1.Name = "BeamEnd"
-    attachment1.Parent = workspace.Terrain
-    
-    beam.Attachment0 = attachment0
-    beam.Attachment1 = attachment1
-    beam.Parent = workspace.Terrain
-    
-    targetBeam = {
-        Beam = beam,
-        Start = attachment0,
-        End = attachment1
-    }
-    
-    return targetBeam
-end
-
 local function removeTargetBeam()
     if targetBeam then
         if targetBeam.Beam then
@@ -149,17 +113,39 @@ local function updateTargetBeam()
         return
     end
     
-    -- Criar beam se não existir
+    if targetBeam then
+        if targetBeam.Start.Parent ~= localHRP or targetBeam.End.Parent ~= targetHRP then
+            removeTargetBeam()
+        end
+    end
+    
     if not targetBeam then
-        targetBeam = createTargetBeam()
+        local attachment0 = Instance.new("Attachment")
+        attachment0.Parent = localHRP
+        
+        local attachment1 = Instance.new("Attachment")
+        attachment1.Parent = targetHRP
+        
+        local beam = Instance.new("Beam")
+        beam.Name = "TargetBeam"
+        beam.Attachment0 = attachment0
+        beam.Attachment1 = attachment1
+        beam.Color = ColorSequence.new(Color3.fromRGB(255, 182, 255))
+        beam.FaceCamera = true
+        beam.Width0 = 0.15
+        beam.Width1 = 0.15
+        beam.Parent = targetChar
+        
+        targetBeam = {
+            Beam = beam,
+            Start = attachment0,
+            End = attachment1
+        }
     end
     
     if targetBeam then
-        targetBeam.Start.WorldPosition = localHRP.Position
-        targetBeam.End.WorldPosition = targetHRP.Position
         targetBeam.Beam.Enabled = true
-        
-        targetBeam.Beam.Color = ColorSequence.new(Color3.fromRGB(255, 105, 180))
+        targetBeam.Beam.Color = ColorSequence.new(Color3.fromRGB(255, 182, 255))
     end
 end
 
@@ -525,9 +511,9 @@ local function highlightTarget(targetPlayer)
     
     local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
     if highlight and highlight:IsA("Highlight") then
-        highlight.FillColor = Color3.fromRGB(255, 105, 180)
-        highlight.OutlineColor = Color3.fromRGB(255, 105, 180)
-        highlight.FillTransparency = 0.4
+        highlight.FillColor = Color3.fromRGB(255, 182, 255)
+        highlight.OutlineColor = Color3.fromRGB(255, 182, 255)
+        highlight.FillTransparency = 0.65
         highlight.OutlineTransparency = 0
     end
     
@@ -537,8 +523,8 @@ local function highlightTarget(targetPlayer)
         if billboard then
             local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
             if label then
-                label.TextColor3 = Color3.fromRGB(255, 105, 180)
-                label.TextStrokeColor3 = Color3.fromRGB(150, 50, 100)
+                label.TextColor3 = Color3.fromRGB(255, 182, 255)
+                label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
             end
         end
     end
