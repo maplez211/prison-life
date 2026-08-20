@@ -488,13 +488,8 @@ RunService.RenderStepped:Connect(function()
     end
     
     updateTargetBeam()
-    
-    if Settings.ESPEnabled then
-        updateESPSync()
-    end
 end)
 
--- ============ TARGET HIGHLIGHT ============
 local function resetAllHighlights()
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= player and plr.Character then
@@ -530,7 +525,7 @@ local function highlightTarget(targetPlayer)
     
     local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
     if highlight and highlight:IsA("Highlight") then
-        highlight.FillColor = Color3.fromRGB(255, 105, 180) -- Rosa
+        highlight.FillColor = Color3.fromRGB(255, 105, 180)
         highlight.OutlineColor = Color3.fromRGB(255, 105, 180)
         highlight.FillTransparency = 0.4
         highlight.OutlineTransparency = 0
@@ -542,7 +537,7 @@ local function highlightTarget(targetPlayer)
         if billboard then
             local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
             if label then
-                label.TextColor3 = Color3.fromRGB(255, 105, 180) -- Rosa
+                label.TextColor3 = Color3.fromRGB(255, 105, 180)
                 label.TextStrokeColor3 = Color3.fromRGB(150, 50, 100)
             end
         end
@@ -574,23 +569,6 @@ end
 RunService.RenderStepped:Connect(function()
     if Settings.ESPEnabled then
         updateESPSync()
-    end
-end)
-
-task.spawn(function()
-    while task.wait(0.5) do
-        if Settings.ESPEnabled then
-            for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= player and plr.Character then
-                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-                    if hum and hum.Health > 0 then
-                        applyESP(plr)
-                    else
-                        removeESP(plr)
-                    end
-                end
-            end
-        end
     end
 end)
 
@@ -631,7 +609,7 @@ UserInputService.InputBegan:Connect(function(input, processed)
         if not Settings.Enabled then
             currentTarget = nil
             smoothedTargetPosition = nil
-            removeAllTracers()
+            removeTargetBeam()
         end
     end
 end)
