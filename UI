@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.3",
+  SubTitle = "by 2knw | Version 0.1.4",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -353,6 +353,16 @@ VisualsTab:AddToggle({
 })
 
 VisualsTab:AddToggle({
+  Name = "Tracer ESP",
+  Description = "Shows the beam tracer to your target",
+  Default = false,
+  Callback = function(v)
+    getgenv().SilentAimSettings.TracerESPEnabled = v
+  end,
+  Flag = "TracerESPEnabled"
+})
+
+VisualsTab:AddToggle({
   Name = "Hide ESP Names",
   Description = "Hides the names above players when ESP is active",
   Default = false,
@@ -364,6 +374,17 @@ VisualsTab:AddToggle({
 })
 
 local CustomizationSection = VisualsTab:AddSection({"Customization"})
+
+VisualsTab:AddDropdown({
+  Name = "Tracer Color",
+  Description = "Choose the Tracer beam color",
+  Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
+  Default = "Pink",
+  Callback = function(Value)
+    setTracerColor(Value)
+  end,
+  Flag = "TracerColorSelected"
+})
 
 VisualsTab:AddToggle({
   Name = "Remove Fog",
