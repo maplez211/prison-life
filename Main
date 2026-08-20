@@ -34,13 +34,8 @@ getgenv().SilentAimSettings = {
     IgnoreCriminals = false,
     HostileCheck = false,
     TrespassCheck = false,
-    TracerEnabled = false,
-    TracerOrigin = "Bottom", 
-    TracerColor = Color3.fromRGB(255, 255, 255),
+    TracerColor = Color3.fromRGB(255, 182, 255),
     TracerThickness = 1,
-    TracerTransparency = 1,
-    TracerOnlyTarget = true, 
-    TracerAllPlayers = false,
     TargetOnPlayer = nil
 }
 
@@ -82,7 +77,7 @@ local function removeTargetBeam()
 end
 
 local function updateTargetBeam()
-    if not Settings.TracerEnabled then
+    if not Settings.ESPEnabled then
         removeTargetBeam()
         return
     end
@@ -115,14 +110,14 @@ local function updateTargetBeam()
         local attachment1 = Instance.new("Attachment")
         attachment1.Parent = targetPart
         
-        local beam = Instance.new("Beam")
+local beam = Instance.new("Beam")
         beam.Name = "TargetBeam"
         beam.Attachment0 = attachment0
         beam.Attachment1 = attachment1
-        beam.Color = ColorSequence.new(Color3.fromRGB(255, 182, 255))
+        beam.Color = ColorSequence.new(Settings.TracerColor)
         beam.FaceCamera = true
-        beam.Width0 = 0.15
-        beam.Width1 = 0.15
+        beam.Width0 = Settings.TracerThickness
+        beam.Width1 = Settings.TracerThickness
         beam.Parent = targetPart.Parent
         
         targetBeam = {
@@ -134,14 +129,7 @@ local function updateTargetBeam()
     
     if targetBeam then
         targetBeam.Beam.Enabled = true
-        targetBeam.Beam.Color = ColorSequence.new(Color3.fromRGB(255, 182, 255))
-    end
-end
-
-function setTracerEnabled(enabled)
-    Settings.TracerEnabled = enabled
-    if not enabled then
-        removeTargetBeam()
+        targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
     end
 end
 
