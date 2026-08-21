@@ -33,6 +33,10 @@ local Tabs = {
     ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
 
+-- Reduz o tamanho de todos os elementos (texto, botões, espaçamento) em 80%.
+-- 100 = tamanho padrão da lib. Ajuste esse número se quiser ainda menor/maior.
+Library:SetDPIScale(80)
+
 -- A primeira Tab criada (Main) já fica selecionada automaticamente,
 -- não existe Window:SelectTab() na Obsidian Library.
 
@@ -576,6 +580,17 @@ MenuGroup:AddDropdown("NotificationSide", {
     Text = "Notification Side",
     Callback = function(Value)
         Library:SetNotifySide(Value)
+    end,
+})
+
+MenuGroup:AddDropdown("DPIScale", {
+    Values = {"50%", "60%", "70%", "80%", "90%", "100%", "125%", "150%"},
+    Default = "80%",
+    Text = "UI Scale",
+    Tooltip = "Deixa os textos, botões e espaçamentos maiores ou menores",
+    Callback = function(Value)
+        local Percent = tonumber(Value:gsub("%%", ""))
+        Library:SetDPIScale(Percent)
     end,
 })
 
