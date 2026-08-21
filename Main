@@ -46,17 +46,29 @@ local smoothedTargetPosition = nil
 local currentTarget = nil
 local lastTargetPlayer = nil
 
--- ============ FOV CIRCLE ============
-local fovCircle = Drawing.new("Circle")
+-- ============ FOV ============
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FOVGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local fovCircle = Instance.new("Frame", screenGui)
+fovCircle.Size = UDim2.new(0, Settings.FOVRadius * 2, 0, Settings.FOVRadius * 2)
+fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+fovCircle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+fovCircle.BackgroundTransparency = 1
+fovCircle.BorderSizePixel = 0
+Instance.new("UICorner", fovCircle).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", fovCircle).Color = Settings.FOVColor
+fovCircle.UIStroke.Thickness = Settings.FOVThickness
 fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
-fovCircle.Radius = Settings.FOVRadius
-fovCircle.Color = Settings.FOVColor
-fovCircle.Thickness = Settings.FOVThickness
-fovCircle.Filled = false
-fovCircle.Transparency = 1
 
 local function toggleFOVCircle(hide)
-    fovCircle.Visible = not hide and Settings.Enabled and Settings.FOVEnabled
+    local stroke = fovCircle:FindFirstChild("UIStroke")
+    if stroke then
+        stroke.Enabled = not hide
+    end
 end
 
 -- ============ BEAM SYSTEM ============
@@ -240,13 +252,15 @@ local function getClosestTarget()
     return closest
 end
 
+-- ============ FOV POSITION ============
 local function updateFOVPosition()
     if not fovCircle then return end
+    fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
     if UserInputService.TouchEnabled then
-        fovCircle.Position = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+        fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
     else
         local mousePos = UserInputService:GetMouseLocation()
-        fovCircle.Position = Vector2.new(mousePos.X, mousePos.Y)
+        fovCircle.Position = UDim2.new(0, mousePos.X - Settings.FOVRadius, 0, mousePos.Y - Settings.FOVRadius - 36)
     end
 end
 
@@ -442,7 +456,14 @@ end)
 
 RunService.RenderStepped:Connect(function()
     updateFOVPosition()
-    fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
+    
+    if fovCircle then
+        fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
+        fovCircle.Size = UDim2.new(0, Settings.FOVRadius * 2, 0, Settings.FOVRadius * 2)
+        if fovCircle:FindFirstChild("UIStroke") then
+            fovCircle.UIStroke.Thickness = Settings.FOVThickness
+        end
+    end
     
     if Settings.Enabled and currentTarget and currentTarget.Parent then
         if not smoothedTargetPosition then
@@ -571,14 +592,15 @@ end)
 -- ============ KEYBINDS ============
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
-        Settings.Enabled = not Settings.Enabled
-        if not Settings.Enabled then
-            currentTarget = nil
-            smoothedTargetPosition = nil
-            removeTargetBeam()
-        end
+if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
+    Settings.Enabled = not Settings.Enabled
+    if fovCircle then fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled end
+    if not Settings.Enabled then
+        currentTarget = nil
+        smoothedTargetPosition = nil
+        removeTargetBeam()
     end
+end
 end)
 
 player.CharacterAdded:Connect(function()
@@ -599,8 +621,8 @@ local skyboxes = {
     ["Red Skybox"] = { SkyboxBk = "rbxassetid://401664839", SkyboxDn = "rbxassetid://401664862", SkyboxFt = "rbxassetid://401664960", SkyboxLf = "rbxassetid://401664881", SkyboxRt = "rbxassetid://401664901", SkyboxUp = "rbxassetid://401664936" },
     ["Slam Skybox"] = { SkyboxBk = "rbxassetid://111576755001670", SkyboxDn = "rbxassetid://111576755001670", SkyboxFt = "rbxassetid://111576755001670", SkyboxLf = "rbxassetid://111576755001670", SkyboxRt = "rbxassetid://111576755001670", SkyboxUp = "rbxassetid://111576755001670" },
     ["Green Eyeball Skybox"] = { SkyboxBk = "rbxassetid://113857258921684", SkyboxDn = "rbxassetid://131099902234134", SkyboxFt = "rbxassetid://98342317659302", SkyboxLf = "rbxassetid://130914716725043", SkyboxRt = "rbxassetid://93970360759256", SkyboxUp = "rbxassetid://135000456639127" },
-    ["LUK Skybox"] = { SkyboxBk = "rbxassetid://70633402089123", SkyboxDn = "rbxassetid://70633402089123", SkyboxFt = "rbxassetid://70633402089123", SkyboxLf = "rbxassetid://70633402089123", SkyboxRt = "rbxassetid://70633402089123", SkyboxUp = "rbxassetid://70633402089123" },
-    ["LUK Members Skybox"] = { SkyboxBk = "rbxassetid://81865783003948", SkyboxDn = "rbxassetid://81865783003948", SkyboxFt = "rbxassetid://81865783003948", SkyboxLf = "rbxassetid://81865783003948", SkyboxRt = "rbxassetid://81865783003948", SkyboxUp = "rbxassetid://81865783003948" }
+    ["Morioh Skybox"] = { SkyboxBk = "rbxassetid://414118015", SkyboxDn = "rbxassetid://414117901", SkyboxFt = "rbxassetid://414117817", SkyboxLf = "rbxassetid://414118150", SkyboxRt = "rbxassetid://414118255", SkyboxUp = "rbxassetid://414118438" },
+    ["Rainy Skybox"] = { SkyboxBk = "rbxassetid://4498828382", SkyboxDn = "rbxassetid://4498828812", SkyboxFt = "rbxassetid://4498829917", SkyboxLf = "rbxassetid://4498830911", SkyboxRt = "rbxassetid://4498830417", SkyboxUp = "rbxassetid://4498831746" }
 }
 
 function setSkybox(name)
@@ -733,19 +755,34 @@ function setFOVColor(name)
         local hue = 0
         fovRainbowConnection = RunService.RenderStepped:Connect(function()
             hue = (hue + 0.5) % 360
-            fovCircle.Color = Color3.fromHSV(hue / 360, 1, 1)
+            local color = Color3.fromHSV(hue / 360, 1, 1)
+            if fovCircle and fovCircle:FindFirstChild("UIStroke") then
+                fovCircle.UIStroke.Color = color
+            end
         end)
         return
     end
     
     local colors = {
-        ["Black"] = Color3.fromRGB(0, 0, 0), ["Red"] = Color3.fromRGB(255, 0, 0),
-        ["Green"] = Color3.fromRGB(0, 255, 0), ["Blue"] = Color3.fromRGB(0, 0, 255),
-        ["Yellow"] = Color3.fromRGB(255, 255, 0), ["Purple"] = Color3.fromRGB(128, 0, 128),
-        ["Cyan"] = Color3.fromRGB(0, 255, 255), ["Orange"] = Color3.fromRGB(255, 165, 0),
-        ["Pink"] = Color3.fromRGB(255, 105, 180), ["White"] = Color3.fromRGB(255, 255, 255)
+        ["Black"] = Color3.fromRGB(0, 0, 0),
+        ["Red"] = Color3.fromRGB(255, 0, 0),
+        ["Green"] = Color3.fromRGB(0, 255, 0),
+        ["Blue"] = Color3.fromRGB(0, 0, 255),
+        ["Yellow"] = Color3.fromRGB(255, 255, 0),
+        ["Purple"] = Color3.fromRGB(128, 0, 128),
+        ["Cyan"] = Color3.fromRGB(0, 255, 255),
+        ["Orange"] = Color3.fromRGB(255, 165, 0),
+        ["Pink"] = Color3.fromRGB(255, 105, 180),
+        ["White"] = Color3.fromRGB(255, 255, 255)
     }
-    if colors[name] then fovCircle.Color = colors[name] end
+    
+    local color = colors[name]
+    if not color then return end
+    
+    Settings.FOVColor = color
+    if fovCircle and fovCircle:FindFirstChild("UIStroke") then
+        fovCircle.UIStroke.Color = color
+    end
 end
 
 -- ============ TRACER COLOR SYSTEM ============
