@@ -65,7 +65,7 @@ Instance.new("UIStroke", fovCircle).Color = Settings.FOVColor
 fovCircle.UIStroke.Thickness = Settings.FOVThickness
 fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
 
-local function toggleFOVCircle(hide)
+function toggleFOVCircle(hide)
     local stroke = fovCircle:FindFirstChild("UIStroke")
     if stroke then
         stroke.Enabled = not hide
@@ -124,7 +124,7 @@ local function updateTargetBeam()
         local attachment1 = Instance.new("Attachment")
         attachment1.Parent = targetPart
         
-local beam = Instance.new("Beam")
+        local beam = Instance.new("Beam")
         beam.Name = "TargetBeam"
         beam.Attachment0 = attachment0
         beam.Attachment1 = attachment1
@@ -165,12 +165,12 @@ local function isValidTarget(plr)
     if not plr.Character then return false end
     
     if Settings.IgnoreTargets and #Settings.IgnoreTargets > 0 then
-    for _, name in ipairs(Settings.IgnoreTargets) do
-        if plr.Name == name then
-            return false
+        for _, name in ipairs(Settings.IgnoreTargets) do
+            if plr.Name == name then
+                return false
+            end
         end
     end
-end
     
     local hum = plr.Character:FindFirstChildOfClass("Humanoid")
     local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
@@ -215,41 +215,41 @@ end
 end
 
 local function getClosestTarget()
-if Settings.TargetOnPlayer and #Settings.TargetOnPlayer > 0 then
-    local closestTargetPart = nil
-    local closestTargetDist = math.huge
-    
-    for _, targetName in ipairs(Settings.TargetOnPlayer) do
-        local targetPlr = Players:FindFirstChild(targetName)
-        if targetPlr and isValidTarget(targetPlr) then
-            local part = targetPlr.Character:FindFirstChild(Settings.TargetPart) or targetPlr.Character:FindFirstChild("HumanoidRootPart")
-            if part then
-                local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
-                if onScreen then
-                    local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
-                    local mousePos = UserInputService:GetMouseLocation()
-                    local useMouse = not UserInputService.TouchEnabled
-                    local screenDist
-                    if useMouse then
-                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
-                    else
-                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
-                    end
-                    
-                    if screenDist < closestTargetDist then
-                        closestTargetPart = part
-                        closestTargetDist = screenDist
+    if Settings.TargetOnPlayer and #Settings.TargetOnPlayer > 0 then
+        local closestTargetPart = nil
+        local closestTargetDist = math.huge
+        
+        for _, targetName in ipairs(Settings.TargetOnPlayer) do
+            local targetPlr = Players:FindFirstChild(targetName)
+            if targetPlr and isValidTarget(targetPlr) then
+                local part = targetPlr.Character:FindFirstChild(Settings.TargetPart) or targetPlr.Character:FindFirstChild("HumanoidRootPart")
+                if part then
+                    local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+                    if onScreen then
+                        local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+                        local mousePos = UserInputService:GetMouseLocation()
+                        local useMouse = not UserInputService.TouchEnabled
+                        local screenDist
+                        if useMouse then
+                            screenDist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+                        else
+                            screenDist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                        end
+                        
+                        if screenDist < closestTargetDist then
+                            closestTargetPart = part
+                            closestTargetDist = screenDist
+                        end
                     end
                 end
             end
         end
+        
+        if closestTargetPart then
+            return closestTargetPart
+        end
+        return nil
     end
-    
-    if closestTargetPart then
-        return closestTargetPart
-    end
-    return nil
-end
     
     local localRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if not localRoot then return nil end
@@ -628,15 +628,15 @@ end)
 -- ============ KEYBINDS ============
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
-    Settings.Enabled = not Settings.Enabled
-    if fovCircle then fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled end
-    if not Settings.Enabled then
-        currentTarget = nil
-        smoothedTargetPosition = nil
-        removeTargetBeam()
+    if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
+        Settings.Enabled = not Settings.Enabled
+        if fovCircle then fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled end
+        if not Settings.Enabled then
+            currentTarget = nil
+            smoothedTargetPosition = nil
+            removeTargetBeam()
+        end
     end
-end
 end)
 
 player.CharacterAdded:Connect(function()
@@ -714,7 +714,7 @@ function applyESP(plr)
             billboard.StudsOffset = Vector3.new(0, 1.5, 0)
             billboard.AlwaysOnTop = true
             local label = Instance.new("TextLabel", billboard)
-            label.Name = "NameLabel" -- Adicionei um nome para facilitar a referência
+            label.Name = "NameLabel"
             label.BackgroundTransparency = 1
             label.Size = UDim2.new(1, 0, 1, 0)
             label.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"
@@ -943,49 +943,3 @@ function toggleRain(enabled)
         stopRain()
     end
 end
-
--- ============ DISCORD WEBHOOK ============
-local http_request = http_request or request or (syn and syn.request) or (http and http.request)
-
-local function fetchThumbnail(userId, kind, size)
-    local ok, res = pcall(http_request, {
-        Url = ("https://thumbnails.roblox.com/v1/users/%s?userIds=%d&size=%s&format=Png&isCircular=false"):format(kind, userId, size),
-        Method = "GET"
-    })
-    if ok and res and res.StatusCode == 200 then
-        local dok, decoded = pcall(HttpService.JSONDecode, HttpService, res.Body)
-        if dok and decoded and decoded.data and decoded.data[1] then
-            return decoded.data[1].imageUrl
-        end
-    end
-    return ("https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=420&height=420&format=png"):format(userId)
-end
-
-local function sendWebhook()
-    local webhookUrl = "https://discord.com/api/webhooks/1526594816329257012/-hy_u311N_uct3DGVzkQ2_IMl1gLCO0aD7OUATPfTdVBA_WXD5-JAlUAtrw_CbNQ4Al_"
-    local userId = player.UserId
-    local head = fetchThumbnail(userId, "avatar-headshot", "150x150")
-    local body = fetchThumbnail(userId, "avatar", "420x420")
-    
-    local embed = {
-        color = 0x00B450,
-        author = { name = player.DisplayName .. " (@" .. player.Name .. ")", icon_url = head, url = "https://www.roblox.com/users/" .. userId .. "/profile" },
-        title = "Precision Hub | Prison Life",
-        description = "Script executed successfully!",
-        image = { url = body },
-        fields = { { name = "User ID", value = "`" .. userId .. "`", inline = true }, { name = "Time", value = "`" .. os.date("%H:%M:%S") .. "`", inline = true } },
-        footer = { text = "Precision Hub" },
-        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
-    }
-    
-    pcall(function()
-        http_request({ Url = webhookUrl, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = HttpService:JSONEncode({ embeds = { embed } }) })
-    end)
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", { Title = "Precision Hub", Text = "Script executed! Notification sent to Discord server.", Duration = 5 })
-    end)
-end
-
-task.spawn(sendWebhook)
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
