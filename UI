@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.8",
+  SubTitle = "by 2knw | Version 0.1.9",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -241,17 +241,6 @@ AimbotTab:AddToggle({
   Flag = "TrespassCheck"
 })
 
-AimbotTab:AddDropdown({
-  Name = "Target Part",
-  Description = "Choose which body part the Silent Aim will lock onto",
-  Options = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
-  Default = "HumanoidRootPart",
-  Callback = function(Value)
-    getgenv().SilentAimSettings.TargetPart = Value
-  end,
-  Flag = "TargetPart"
-})
-
 AimbotTab:AddSlider({
   Name = "Smoothing",
   Min = 0,
@@ -277,6 +266,8 @@ AimbotTab:AddSlider({
 })
 
 -- ============ TARGET ON SECTION ============
+local AimbotSection = AimbotTab:AddSection({"Target On"})
+
 local targetOptions = {}
 for _, plr in ipairs(Players:GetPlayers()) do
     if plr ~= player then
@@ -296,7 +287,7 @@ local targetDropdown = AimbotTab:AddDropdown({
     Description = "Select specific players to target",
     Options = targetOptions,
     Default = {},
-    Multi = true,
+    MultiSelect = true,
     Callback = function(Value)
         if not Value or #Value == 0 then
             getgenv().SilentAimSettings.TargetOnPlayer = {}
@@ -324,7 +315,7 @@ local ignoreTargetDropdown = AimbotTab:AddDropdown({
     Description = "Select players to completely ignore",
     Options = ignoreTargetOptions,
     Default = {},
-    Multi = true,
+    MultiSelect = true,
     Callback = function(Value)
         getgenv().SilentAimSettings.IgnoreTargets = Value or {}
     end
@@ -343,7 +334,18 @@ AimbotTab:AddButton({"Reset Ignore List", function()
     ignoreTargetDropdown:Set(newOptions)
 end})
 
+AimbotTab:AddDropdown({
+  Name = "Target Part",
+  Description = "Choose which body part the Silent Aim will lock onto",
+  Options = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
+  Default = "HumanoidRootPart",
+  Callback = function(Value)
+    getgenv().SilentAimSettings.TargetPart = Value
+  end,
+  Flag = "TargetPart"
+})
 
+-- ============ FOV SECTION ============
 local FOVSection = AimbotTab:AddSection({"FOV"})
 
 AimbotTab:AddDropdown({
