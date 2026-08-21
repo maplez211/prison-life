@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.4",
+  SubTitle = "by 2knw | Version 0.1.5",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -375,17 +375,6 @@ VisualsTab:AddToggle({
 
 local CustomizationSection = VisualsTab:AddSection({"Customization"})
 
-VisualsTab:AddDropdown({
-  Name = "Tracer Color",
-  Description = "Choose the Tracer beam color",
-  Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
-  Default = "Pink",
-  Callback = function(Value)
-    setTracerColor(Value)
-  end,
-  Flag = "TracerColorSelected"
-})
-
 VisualsTab:AddToggle({
   Name = "Remove Fog",
   Description = "Removes the fog from the game",
@@ -400,6 +389,17 @@ VisualsTab:AddToggle({
     end
   end,
   Flag = "FogRemoved"
+})
+
+VisualsTab:AddDropdown({
+  Name = "Tracer Color",
+  Description = "Choose the Tracer beam color",
+  Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
+  Default = "Pink",
+  Callback = function(Value)
+    setTracerColor(Value)
+  end,
+  Flag = "TracerColorSelected"
 })
 
 VisualsTab:AddDropdown({
