@@ -1,0 +1,991 @@
+-- Main Script Precision | Prison Life
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+while not player do task.wait() player = Players.LocalPlayer end
+local playerGui = player:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
+
+-- ============ SETTINGS ============
+getgenv().SilentAimSettings = {
+    Enabled = true,
+    TargetPart = "HumanoidRootPart",
+    Method = "Raycast",
+    VisibleCheck = true,
+    TeamCheck = true,
+    Smoothing = 0.5,
+    HitChance = 100,
+    FOVEnabled = true,
+    FOVRadius = 100,
+    FOVColor = Color3.fromRGB(255, 255, 255),
+    FOVThickness = 1,
+    FriendCheck = true,
+    SpinbotSpeed = 0,
+    ESPEnabled = false,
+    ESPNamesEnabled = true,
+    IgnoreInmates = false,
+    IgnoreGuards = false,
+    IgnoreCriminals = false,
+    HostileCheck = false,
+    TrespassCheck = false,
+    TracerColor = Color3.fromRGB(255, 182, 255),
+    TracerThickness = 0.15,
+    TracerESPEnabled = false,
+    TargetOnPlayer = {},
+    IgnoreTargets = {}
+}
+
+local Settings = getgenv().SilentAimSettings
+local currentSkybox = nil
+local smoothedTargetPosition = nil
+local currentTarget = nil
+local lastTargetPlayer = nil
+
+-- ============ FOV ============
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FOVGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local fovCircle = Instance.new("Frame", screenGui)
+fovCircle.Size = UDim2.new(0, Settings.FOVRadius * 2, 0, Settings.FOVRadius * 2)
+fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+fovCircle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+fovCircle.BackgroundTransparency = 1
+fovCircle.BorderSizePixel = 0
+Instance.new("UICorner", fovCircle).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", fovCircle).Color = Settings.FOVColor
+fovCircle.UIStroke.Thickness = Settings.FOVThickness
+fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
+
+local function toggleFOVCircle(hide)
+    local stroke = fovCircle:FindFirstChild("UIStroke")
+    if stroke then
+        stroke.Enabled = not hide
+    end
+end
+
+-- ============ BEAM SYSTEM ============
+local targetBeam = nil
+
+local function removeTargetBeam()
+    if targetBeam then
+        if targetBeam.Beam then
+            targetBeam.Beam:Destroy()
+        end
+        if targetBeam.Start then
+            targetBeam.Start:Destroy()
+        end
+        if targetBeam.End then
+            targetBeam.End:Destroy()
+        end
+        targetBeam = nil
+    end
+end
+
+local function updateTargetBeam()
+    if not Settings.ESPEnabled or not Settings.TracerESPEnabled then
+        removeTargetBeam()
+        return
+    end
+    
+    if not currentTarget or not currentTarget.Parent then
+        removeTargetBeam()
+        return
+    end
+    
+    local targetPart = currentTarget
+    
+    local localChar = player.Character
+    local localHRP = localChar and localChar:FindFirstChild("HumanoidRootPart")
+    
+    if not targetPart or not localHRP then
+        removeTargetBeam()
+        return
+    end
+    
+    if targetBeam then
+        if targetBeam.Start.Parent ~= localHRP or targetBeam.End.Parent ~= targetPart then
+            removeTargetBeam()
+        end
+    end
+    
+    if not targetBeam then
+        local attachment0 = Instance.new("Attachment")
+        attachment0.Parent = localHRP
+        
+        local attachment1 = Instance.new("Attachment")
+        attachment1.Parent = targetPart
+        
+local beam = Instance.new("Beam")
+        beam.Name = "TargetBeam"
+        beam.Attachment0 = attachment0
+        beam.Attachment1 = attachment1
+        beam.Color = ColorSequence.new(Settings.TracerColor)
+        beam.FaceCamera = true
+        beam.Width0 = Settings.TracerThickness
+        beam.Width1 = Settings.TracerThickness
+        beam.Parent = targetPart.Parent
+        
+        targetBeam = {
+            Beam = beam,
+            Start = attachment0,
+            End = attachment1
+        }
+    end
+    
+    if targetBeam then
+        targetBeam.Beam.Enabled = true
+        targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
+    end
+end
+
+-- ============ MAIN FUNCTIONS ============
+local function isVisible(targetCharacter)
+    if not targetCharacter then return false end
+    local hrp = targetCharacter:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    local origin = camera.CFrame.Position
+    local direction = hrp.Position - origin
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Blacklist
+    params.FilterDescendantsInstances = {player.Character, targetCharacter}
+    return Workspace:Raycast(origin, direction, params) == nil
+end
+
+local function isValidTarget(plr)
+    if not plr or plr == player then return false end
+    if not plr.Character then return false end
+    
+    if Settings.IgnoreTargets and #Settings.IgnoreTargets > 0 then
+    for _, name in ipairs(Settings.IgnoreTargets) do
+        if plr.Name == name then
+            return false
+        end
+    end
+end
+    
+    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+    local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+    if not hum or hum.Health <= 0 or not hrp then return false end
+    
+    if Settings.FriendCheck and player:IsFriendsWith(plr.UserId) then return false end
+    
+    if Settings.TeamCheck then
+        if player.Team and plr.Team == player.Team then return false end
+    end
+    
+    if Settings.IgnoreInmates and plr.Team and plr.Team.Name == "Inmates" then return false end
+    if Settings.IgnoreGuards and plr.Team and plr.Team.Name == "Guards" then return false end
+    if Settings.IgnoreCriminals and plr.Team and plr.Team.Name == "Criminals" then return false end
+    
+    if Settings.VisibleCheck then
+        if not isVisible(plr.Character) then return false end
+    end
+    
+    if Settings.HostileCheck or Settings.TrespassCheck then
+        local localTeam = player.Team and player.Team.Name
+        local targetTeam = plr.Team and plr.Team.Name
+        
+        local isGuardOrCriminal = (localTeam == "Guards" or localTeam == "Criminals")
+        local isInmate = (targetTeam == "Inmates")
+        
+        if isGuardOrCriminal and isInmate then
+            local hostile = plr.Character:GetAttribute("Hostile")
+            local trespass = plr.Character:GetAttribute("Trespassing")
+            
+            if Settings.HostileCheck and Settings.TrespassCheck then
+                if not hostile and not trespass then return false end
+            elseif Settings.HostileCheck then
+                if not hostile then return false end
+            elseif Settings.TrespassCheck then
+                if not trespass then return false end
+            end
+        end
+    end
+    
+    return true
+end
+
+local function getClosestTarget()
+if Settings.TargetOnPlayer and #Settings.TargetOnPlayer > 0 then
+    local closestTargetPart = nil
+    local closestTargetDist = math.huge
+    
+    for _, targetName in ipairs(Settings.TargetOnPlayer) do
+        local targetPlr = Players:FindFirstChild(targetName)
+        if targetPlr and isValidTarget(targetPlr) then
+            local part = targetPlr.Character:FindFirstChild(Settings.TargetPart) or targetPlr.Character:FindFirstChild("HumanoidRootPart")
+            if part then
+                local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+                    local mousePos = UserInputService:GetMouseLocation()
+                    local useMouse = not UserInputService.TouchEnabled
+                    local screenDist
+                    if useMouse then
+                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+                    else
+                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                    end
+                    
+                    if screenDist < closestTargetDist then
+                        closestTargetPart = part
+                        closestTargetDist = screenDist
+                    end
+                end
+            end
+        end
+    end
+    
+    if closestTargetPart then
+        return closestTargetPart
+    end
+    return nil
+end
+    
+    local localRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not localRoot then return nil end
+    
+    local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+    local mousePos = UserInputService:GetMouseLocation()
+    local useMouse = not UserInputService.TouchEnabled
+    
+    local closest = nil
+    local shortestDistance = math.huge
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if isValidTarget(plr) then
+            local part = plr.Character:FindFirstChild(Settings.TargetPart) or plr.Character:FindFirstChild("HumanoidRootPart")
+            if part then
+                local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local screenDist
+                    if useMouse then
+                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+                    else
+                        screenDist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                    end
+                    
+                    if screenDist <= Settings.FOVRadius then
+                        local worldDist = (part.Position - localRoot.Position).Magnitude
+                        if worldDist < shortestDistance then
+                            closest = part
+                            shortestDistance = worldDist
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+-- ============ FOV POSITION ============
+local function updateFOVPosition()
+    if not fovCircle then return end
+    fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+    if UserInputService.TouchEnabled then
+        fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+    else
+        local mousePos = UserInputService:GetMouseLocation()
+        fovCircle.Position = UDim2.new(0, mousePos.X - Settings.FOVRadius, 0, mousePos.Y - Settings.FOVRadius - 36)
+    end
+end
+
+-- ============ SILENT AIM HOOK ============
+local ExpectedArguments = {
+    FindPartOnRayWithIgnoreList = {
+        ArgCountRequired = 3,
+        Args = { "Instance", "Ray", "table", "boolean", "boolean" }
+    },
+    FindPartOnRayWithWhitelist = {
+        ArgCountRequired = 3,
+        Args = { "Instance", "Ray", "table", "boolean" }
+    },
+    FindPartOnRay = {
+        ArgCountRequired = 2,
+        Args = { "Instance", "Ray", "Instance", "boolean", "boolean" }
+    },
+    Raycast = {
+        ArgCountRequired = 3,
+        Args = { "Instance", "Vector3", "Vector3", "RaycastParams" }
+    }
+}
+
+local function CalculateChance(Percentage)
+    Percentage = math.floor(Percentage)
+    local chance = math.floor(Random.new().NextNumber(Random.new(), 0, 1) * 100) / 100
+    return chance <= Percentage / 100
+end
+
+local function ValidateArguments(Args, RayMethod)
+    local Matches = 0
+    if #Args < RayMethod.ArgCountRequired then return false end
+    for Pos, Argument in next, Args do
+        if typeof(Argument) == RayMethod.Args[Pos] then
+            Matches = Matches + 1
+        end
+    end
+    return Matches >= RayMethod.ArgCountRequired
+end
+
+local function getSpreadDirection(Origin, OriginalDirection, HitPart)
+    if typeof(HitPart) ~= "Instance" or not HitPart.Parent then 
+        return OriginalDirection 
+    end
+    
+    local OriginalDistance = OriginalDirection.Magnitude
+    if OriginalDistance == 0 then OriginalDistance = 1000 end
+    
+    local PartSize = HitPart.Size
+    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2) * 0.2
+    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2) * 0.2
+    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2) * 0.2
+    
+    local RandomOffset = Vector3.new(SpreadX, SpreadY, SpreadZ)
+    if RandomOffset.Magnitude == 0 then
+        RandomOffset = Vector3.new(0.1, 0.1, 0.1)
+    end
+    
+    local BasePosition = smoothedTargetPosition or HitPart.Position
+    local TargetPosition = BasePosition + RandomOffset
+    
+    local NewDirection = (TargetPosition - Origin)
+    local NewDistance = NewDirection.Magnitude
+    
+    if NewDistance == 0 then
+        return OriginalDirection
+    end
+    
+    local FinalDistance = math.max(OriginalDistance, NewDistance)
+    return NewDirection.Unit * FinalDistance
+end
+
+local function isLocalPlayerShooting(Arguments, Method, Origin, OriginalDirection)
+    local LocalChar = player.Character
+    if not LocalChar then return false end
+
+    local rayLength = OriginalDirection and OriginalDirection.Magnitude or 0
+
+    if Origin and (Origin - camera.CFrame.Position).Magnitude <= 2 then
+        if rayLength < 30 then
+            return false
+        end
+    end
+
+    local ignoreList = nil
+    if Method == "Raycast" then
+        local params = Arguments[4]
+        if typeof(params) == "RaycastParams" then
+            ignoreList = params.FilterDescendantsInstances
+        end
+    elseif Method == "FindPartOnRayWithIgnoreList" then
+        if typeof(Arguments[3]) == "table" then
+            ignoreList = Arguments[3]
+        end
+    elseif Method == "FindPartOnRay" or Method == "findPartOnRay" then
+        if typeof(Arguments[3]) == "table" then
+            ignoreList = Arguments[3]
+        elseif typeof(Arguments[4]) == "table" then
+            ignoreList = Arguments[4]
+        end
+    end
+
+    if ignoreList then
+        for _, inst in next, ignoreList do
+            if inst == LocalChar then
+                return true
+            end
+        end
+    end
+
+    if Origin and (Origin - camera.CFrame.Position).Magnitude <= 2 then
+        return true
+    end
+
+    return false
+end
+
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
+    local Method = getnamecallmethod()
+    local Arguments = {...}
+    local self = Arguments[1]
+    local chance = CalculateChance(Settings.HitChance)
+    
+    if Settings.Enabled and self == workspace and not checkcaller() and chance == true then
+        if Method == "FindPartOnRayWithIgnoreList" and Settings.Method == Method then
+            if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithIgnoreList) then
+                local A_Ray = Arguments[2]
+                local Origin = A_Ray.Origin
+                
+                if isLocalPlayerShooting(Arguments, Method, Origin, A_Ray.Direction) then
+                    local HitPart = currentTarget
+                    if HitPart and HitPart.Parent then
+                        Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
+                        return oldNamecall(unpack(Arguments))
+                    end
+                end
+            end
+        elseif Method == "FindPartOnRayWithWhitelist" and Settings.Method == Method then
+            if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithWhitelist) then
+                local A_Ray = Arguments[2]
+                local Origin = A_Ray.Origin
+                
+                if isLocalPlayerShooting(Arguments, Method, Origin, A_Ray.Direction) then
+                    local HitPart = currentTarget
+                    if HitPart and HitPart.Parent then
+                        Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
+                        return oldNamecall(unpack(Arguments))
+                    end
+                end
+            end
+        elseif (Method == "FindPartOnRay" or Method == "findPartOnRay") and Settings.Method:lower() == Method:lower() then
+            if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRay) then
+                local A_Ray = Arguments[2]
+                local Origin = A_Ray.Origin
+                
+                if isLocalPlayerShooting(Arguments, Method, Origin, A_Ray.Direction) then
+                    local HitPart = currentTarget
+                    if HitPart and HitPart.Parent then
+                        Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
+                        return oldNamecall(unpack(Arguments))
+                    end
+                end
+            end
+        elseif Method == "Raycast" and Settings.Method == Method then
+            if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
+                local A_Origin = Arguments[2]
+                local OriginalDirection = Arguments[3]
+                
+                if isLocalPlayerShooting(Arguments, Method, A_Origin, OriginalDirection) then
+                    local HitPart = currentTarget
+                    if HitPart and HitPart.Parent then
+                        Arguments[3] = getSpreadDirection(A_Origin, OriginalDirection, HitPart)
+                        return oldNamecall(unpack(Arguments))
+                    end
+                end
+            end
+        end
+    end
+    return oldNamecall(...)
+end))
+
+-- ============ MAIN LOOP ============
+task.spawn(function()
+    while task.wait(0.1) do
+        if Settings.Enabled then
+            currentTarget = getClosestTarget()
+        else
+            currentTarget = nil
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    updateFOVPosition()
+    
+    if fovCircle then
+        fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
+        fovCircle.Size = UDim2.new(0, Settings.FOVRadius * 2, 0, Settings.FOVRadius * 2)
+        if fovCircle:FindFirstChild("UIStroke") then
+            fovCircle.UIStroke.Thickness = Settings.FOVThickness
+        end
+    end
+    
+    if Settings.Enabled and currentTarget and currentTarget.Parent then
+        if not smoothedTargetPosition then
+            smoothedTargetPosition = currentTarget.Position
+        else
+            smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, Settings.Smoothing)
+        end
+    else
+        smoothedTargetPosition = nil
+    end
+    
+    updateTargetBeam()
+end)
+
+local function resetAllHighlights()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            local highlight = plr.Character:FindFirstChild("ESPHighlight")
+            if highlight and highlight:IsA("Highlight") then
+                local teamColor = Color3.fromRGB(255, 0, 0)
+                if plr.TeamColor then teamColor = plr.TeamColor.Color
+                elseif plr.Team and plr.Team.TeamColor then teamColor = plr.Team.TeamColor.Color end
+                
+                highlight.FillColor = teamColor
+                highlight.OutlineColor = teamColor
+                highlight.FillTransparency = 0.85
+                highlight.OutlineTransparency = 0
+            end
+            
+            local head = plr.Character:FindFirstChild("Head")
+            if head then
+                local billboard = head:FindFirstChild("ESPNameTag")
+                if billboard then
+                    local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
+                    if label then
+                        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function highlightTarget(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then return end
+    
+    local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+    if highlight and highlight:IsA("Highlight") then
+        highlight.FillColor = Color3.fromRGB(255, 182, 255)
+        highlight.OutlineColor = Color3.fromRGB(255, 182, 255)
+        highlight.FillTransparency = 0.65
+        highlight.OutlineTransparency = 0
+    end
+    
+    local head = targetPlayer.Character:FindFirstChild("Head")
+    if head then
+        local billboard = head:FindFirstChild("ESPNameTag")
+        if billboard then
+            local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
+            if label then
+                label.TextColor3 = Color3.fromRGB(255, 182, 255)
+                label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            end
+        end
+    end
+end
+
+local function updateESPSync()
+    if not Settings.ESPEnabled then
+        return
+    end
+    
+    resetAllHighlights()
+    
+    local targetPlayer = nil
+    if Settings.Enabled and currentTarget and currentTarget.Parent then
+        local targetChar = currentTarget.Parent
+        if targetChar:IsA("Model") then
+            targetPlayer = Players:GetPlayerFromCharacter(targetChar)
+        end
+    end
+    
+    if targetPlayer and targetPlayer.Character then
+        highlightTarget(targetPlayer)
+    end
+    
+    lastTargetPlayer = targetPlayer
+end
+
+RunService.RenderStepped:Connect(function()
+    if Settings.ESPEnabled then
+        updateESPSync()
+    end
+end)
+
+-- ============ ESP AUTO REFRESH ============
+task.spawn(function()
+    while task.wait(0.5) do
+        if Settings.ESPEnabled then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character then
+                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then
+                        applyESP(plr)
+                    else
+                        removeESP(plr)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ============ SPINBOT ============
+RunService.RenderStepped:Connect(function()
+    if Settings.SpinbotSpeed > 0 then
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(Settings.SpinbotSpeed), 0)
+        end
+    end
+end)
+
+-- ============ KEYBINDS ============
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
+    Settings.Enabled = not Settings.Enabled
+    if fovCircle then fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled end
+    if not Settings.Enabled then
+        currentTarget = nil
+        smoothedTargetPosition = nil
+        removeTargetBeam()
+    end
+end
+end)
+
+player.CharacterAdded:Connect(function()
+    camera.CameraType = Enum.CameraType.Custom
+    if Settings.ESPEnabled then
+        task.wait(0.5)
+        updateESP()
+    end
+end)
+
+-- ============ SKYBOXES ============
+local skyboxes = {
+    ["Gray Skybox"] = { SkyboxBk = "rbxassetid://154987705", SkyboxDn = "rbxassetid://154987705", SkyboxFt = "rbxassetid://154987705", SkyboxLf = "rbxassetid://154987705", SkyboxRt = "rbxassetid://154987705", SkyboxUp = "rbxassetid://154987705" },
+    ["2knw & Donk666 Skybox"] = { SkyboxBk = "rbxassetid://121222457209872", SkyboxDn = "rbxassetid://121222457209872", SkyboxFt = "rbxassetid://121222457209872", SkyboxLf = "rbxassetid://121222457209872", SkyboxRt = "rbxassetid://121222457209872", SkyboxUp = "rbxassetid://121222457209872" },
+    ["Snow Skybox"] = { SkyboxBk = "rbxassetid://155657655", SkyboxDn = "rbxassetid://155674246", SkyboxFt = "rbxassetid://155657609", SkyboxLf = "rbxassetid://155657671", SkyboxRt = "rbxassetid://155657619", SkyboxUp = "rbxassetid://155674931" },
+    ["Cartoon Skybox"] = { SkyboxBk = "rbxassetid://15114954171", SkyboxDn = "rbxassetid://15114958869", SkyboxFt = "rbxassetid://15114963740", SkyboxLf = "rbxassetid://15114957947", SkyboxRt = "rbxassetid://15114955238", SkyboxUp = "rbxassetid://15114948718" },
+    ["Lince Skybox"] = { SkyboxBk = "rbxassetid://102112718813044", SkyboxDn = "rbxassetid://102112718813044", SkyboxFt = "rbxassetid://102112718813044", SkyboxLf = "rbxassetid://102112718813044", SkyboxRt = "rbxassetid://102112718813044", SkyboxUp = "rbxassetid://102112718813044" },
+    ["Red Skybox"] = { SkyboxBk = "rbxassetid://401664839", SkyboxDn = "rbxassetid://401664862", SkyboxFt = "rbxassetid://401664960", SkyboxLf = "rbxassetid://401664881", SkyboxRt = "rbxassetid://401664901", SkyboxUp = "rbxassetid://401664936" },
+    ["Slam Skybox"] = { SkyboxBk = "rbxassetid://111576755001670", SkyboxDn = "rbxassetid://111576755001670", SkyboxFt = "rbxassetid://111576755001670", SkyboxLf = "rbxassetid://111576755001670", SkyboxRt = "rbxassetid://111576755001670", SkyboxUp = "rbxassetid://111576755001670" },
+    ["Green Eyeball Skybox"] = { SkyboxBk = "rbxassetid://113857258921684", SkyboxDn = "rbxassetid://131099902234134", SkyboxFt = "rbxassetid://98342317659302", SkyboxLf = "rbxassetid://130914716725043", SkyboxRt = "rbxassetid://93970360759256", SkyboxUp = "rbxassetid://135000456639127" },
+    ["Morioh Skybox"] = { SkyboxBk = "rbxassetid://414118015", SkyboxDn = "rbxassetid://414117901", SkyboxFt = "rbxassetid://414117817", SkyboxLf = "rbxassetid://414118150", SkyboxRt = "rbxassetid://414118255", SkyboxUp = "rbxassetid://414118438" },
+    ["Rainy Skybox"] = { SkyboxBk = "rbxassetid://4498828382", SkyboxDn = "rbxassetid://4498828812", SkyboxFt = "rbxassetid://4498829917", SkyboxLf = "rbxassetid://4498830911", SkyboxRt = "rbxassetid://4498830417", SkyboxUp = "rbxassetid://4498831746" }
+}
+
+function setSkybox(name)
+    if currentSkybox then
+        pcall(function()
+            if Lighting:FindFirstChild(currentSkybox) then
+                Lighting[currentSkybox]:Destroy()
+            end
+        end)
+        currentSkybox = nil
+    end
+    if name == "None" then return end
+    local data = skyboxes[name]
+    if not data then return end
+    local sky = Instance.new("Sky", Lighting)
+    sky.Name = name
+    for prop, value in pairs(data) do sky[prop] = value end
+    currentSkybox = name
+end
+
+-- ============ ESP ============
+function applyESP(plr)
+    if plr == player then return end
+    local char = plr.Character
+    if not char then return end
+    
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return end
+    
+    local teamColor = Color3.fromRGB(255, 0, 0)
+    if plr.TeamColor then teamColor = plr.TeamColor.Color
+    elseif plr.Team and plr.Team.TeamColor then teamColor = plr.Team.TeamColor.Color end
+    
+    local highlight = char:FindFirstChild("ESPHighlight")
+    if not highlight then
+        highlight = Instance.new("Highlight", char)
+        highlight.Name = "ESPHighlight"
+    end
+    highlight.FillColor = teamColor
+    highlight.FillTransparency = 0.85
+    highlight.OutlineColor = teamColor
+    highlight.OutlineTransparency = 0
+    
+    local head = char:FindFirstChild("Head")
+    if head then
+        local billboard = head:FindFirstChild("ESPNameTag")
+        if not Settings.ESPNamesEnabled then
+            if billboard then billboard:Destroy() end
+        elseif not billboard then
+            billboard = Instance.new("BillboardGui", head)
+            billboard.Name = "ESPNameTag"
+            billboard.Size = UDim2.new(0, 200, 0, 30)
+            billboard.StudsOffset = Vector3.new(0, 1.5, 0)
+            billboard.AlwaysOnTop = true
+            local label = Instance.new("TextLabel", billboard)
+            label.Name = "NameLabel" -- Adicionei um nome para facilitar a referência
+            label.BackgroundTransparency = 1
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 12
+            label.TextStrokeTransparency = 0
+            label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        end
+    end
+end
+
+function removeESP(plr)
+    if plr.Character then
+        local highlight = plr.Character:FindFirstChild("ESPHighlight")
+        if highlight then highlight:Destroy() end
+        local head = plr.Character:FindFirstChild("Head")
+        if head then
+            local billboard = head:FindFirstChild("ESPNameTag")
+            if billboard then billboard:Destroy() end
+        end
+    end
+end
+
+function updateESP()
+    if not Settings.ESPEnabled then
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then removeESP(plr) end
+        end
+        return
+    end
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then applyESP(plr) end
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        if Settings.ESPEnabled then
+            task.wait(0.5)
+            applyESP(plr)
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    removeESP(plr)
+end)
+
+-- ============ FOG COLOR SYSTEM ============
+function setFogColor(name)
+    local colors = {
+        ["Default"] = Color3.fromRGB(100, 100, 100), ["Black"] = Color3.fromRGB(0, 0, 0),
+        ["Red"] = Color3.fromRGB(255, 50, 50), ["Green"] = Color3.fromRGB(50, 255, 50),
+        ["Blue"] = Color3.fromRGB(50, 50, 255), ["Yellow"] = Color3.fromRGB(255, 255, 50),
+        ["Purple"] = Color3.fromRGB(128, 50, 128), ["Cyan"] = Color3.fromRGB(50, 255, 255),
+        ["Orange"] = Color3.fromRGB(255, 165, 50), ["Pink"] = Color3.fromRGB(255, 105, 180),
+        ["White"] = Color3.fromRGB(255, 255, 255)
+    }
+    local color = colors[name]
+    if color then Lighting.FogColor = color end
+end
+
+-- ============ FOV COLOR SYSTEM ============
+local fovRainbowConnection = nil
+
+function setFOVColor(name)
+    if fovRainbowConnection then
+        fovRainbowConnection:Disconnect()
+        fovRainbowConnection = nil
+    end
+    
+    if name == "Rainbow" then
+        local hue = 0
+        fovRainbowConnection = RunService.RenderStepped:Connect(function()
+            hue = (hue + 0.5) % 360
+            local color = Color3.fromHSV(hue / 360, 1, 1)
+            if fovCircle and fovCircle:FindFirstChild("UIStroke") then
+                fovCircle.UIStroke.Color = color
+            end
+        end)
+        return
+    end
+    
+    local colors = {
+        ["Black"] = Color3.fromRGB(0, 0, 0),
+        ["Red"] = Color3.fromRGB(255, 0, 0),
+        ["Green"] = Color3.fromRGB(0, 255, 0),
+        ["Blue"] = Color3.fromRGB(0, 0, 255),
+        ["Yellow"] = Color3.fromRGB(255, 255, 0),
+        ["Purple"] = Color3.fromRGB(128, 0, 128),
+        ["Cyan"] = Color3.fromRGB(0, 255, 255),
+        ["Orange"] = Color3.fromRGB(255, 165, 0),
+        ["Pink"] = Color3.fromRGB(255, 105, 180),
+        ["White"] = Color3.fromRGB(255, 255, 255)
+    }
+    
+    local color = colors[name]
+    if not color then return end
+    
+    Settings.FOVColor = color
+    if fovCircle and fovCircle:FindFirstChild("UIStroke") then
+        fovCircle.UIStroke.Color = color
+    end
+end
+
+-- ============ TRACER COLOR SYSTEM ============
+
+function setTracerColor(name)
+    local colors = {
+        ["Black"] = Color3.fromRGB(0, 0, 0),
+        ["Red"] = Color3.fromRGB(255, 0, 0),
+        ["Green"] = Color3.fromRGB(0, 255, 0),
+        ["Blue"] = Color3.fromRGB(0, 0, 255),
+        ["Yellow"] = Color3.fromRGB(255, 255, 0),
+        ["Purple"] = Color3.fromRGB(128, 0, 128),
+        ["Cyan"] = Color3.fromRGB(0, 255, 255),
+        ["Orange"] = Color3.fromRGB(255, 165, 0),
+        ["Pink"] = Color3.fromRGB(255, 182, 255),
+        ["White"] = Color3.fromRGB(255, 255, 255)
+    }
+    if colors[name] then
+        Settings.TracerColor = colors[name]
+        if targetBeam then
+            targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
+        end
+    end
+end
+
+-- ============ RAIN SYSTEM ============
+local rainActive = false
+local rainSound = nil
+local rainParts = {}
+local rainLoopConnection = nil
+
+local function stopRain()
+    rainActive = false
+    
+    if rainLoopConnection then
+        rainLoopConnection:Disconnect()
+        rainLoopConnection = nil
+    end
+    
+    if rainSound then
+        rainSound:Stop()
+        rainSound:Destroy()
+        rainSound = nil
+    end
+    
+    for _, part in ipairs(rainParts) do
+        if part and part.Parent then
+            part:Destroy()
+        end
+    end
+    rainParts = {}
+end
+
+local function startRain()
+    stopRain()
+    rainActive = true
+    
+    rainSound = Instance.new("Sound")
+    rainSound.SoundId = "rbxassetid://1516791621"
+    rainSound.Name = "RainSound"
+    rainSound.Parent = workspace
+    rainSound.Looped = true
+    rainSound:Play()
+    
+    local rainPerLoop = 5
+    local rainArea = Vector3.new(100, 100, 100)
+    local rainTransparency = 0.5
+    local rainColor = Color3.fromRGB(194, 255, 246)
+    local loopCounter = 0
+    
+    rainLoopConnection = task.spawn(function()
+        while rainActive do
+            loopCounter = loopCounter + 1
+            
+            for i = 1, rainPerLoop do
+                if not rainActive then break end
+                
+                local sizeX = math.random(2524, 3000) / 1000
+                local sizeY = math.random(30, 40) / 100
+                local sizeZ = math.random(157, 200) / 1000
+                
+                local rainPart = Instance.new("Part")
+                rainPart.Name = "RainDrop"
+                rainPart.Shape = Enum.PartType.Cylinder
+                rainPart.Size = Vector3.new(sizeX, sizeY, sizeZ)
+                rainPart.Position = camera.CFrame.Position + Vector3.new(math.random(-100, 100), 100, math.random(-100, 100))
+                rainPart.Orientation = Vector3.new(math.random(0, 5), 90, math.random(85, 95))
+                rainPart.Transparency = rainTransparency
+                rainPart.CanCollide = false
+                rainPart.Color = rainColor
+                rainPart.Anchored = false
+                rainPart.Material = Enum.Material.SmoothPlastic
+                rainPart.Parent = workspace
+                
+                table.insert(rainParts, rainPart)
+                
+                local function cleanupRainPart(part)
+                    task.wait(2)
+                    if part and part.Parent then
+                        part:Destroy()
+                    end
+                    for idx, p in ipairs(rainParts) do
+                        if p == part then
+                            table.remove(rainParts, idx)
+                            break
+                        end
+                    end
+                end
+                
+                task.spawn(cleanupRainPart, rainPart)
+            end
+            
+            task.wait()
+        end
+    end)
+end
+
+function toggleRain(enabled)
+    if enabled then
+        startRain()
+    else
+        stopRain()
+    end
+end
+
+-- ============ DISCORD WEBHOOK ============
+local http_request = http_request or request or (syn and syn.request) or (http and http.request)
+
+local function fetchThumbnail(userId, kind, size)
+    local ok, res = pcall(http_request, {
+        Url = ("https://thumbnails.roblox.com/v1/users/%s?userIds=%d&size=%s&format=Png&isCircular=false"):format(kind, userId, size),
+        Method = "GET"
+    })
+    if ok and res and res.StatusCode == 200 then
+        local dok, decoded = pcall(HttpService.JSONDecode, HttpService, res.Body)
+        if dok and decoded and decoded.data and decoded.data[1] then
+            return decoded.data[1].imageUrl
+        end
+    end
+    return ("https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=420&height=420&format=png"):format(userId)
+end
+
+local function sendWebhook()
+    local webhookUrl = "https://discord.com/api/webhooks/1526594816329257012/-hy_u311N_uct3DGVzkQ2_IMl1gLCO0aD7OUATPfTdVBA_WXD5-JAlUAtrw_CbNQ4Al_"
+    local userId = player.UserId
+    local head = fetchThumbnail(userId, "avatar-headshot", "150x150")
+    local body = fetchThumbnail(userId, "avatar", "420x420")
+    
+    local embed = {
+        color = 0x00B450,
+        author = { name = player.DisplayName .. " (@" .. player.Name .. ")", icon_url = head, url = "https://www.roblox.com/users/" .. userId .. "/profile" },
+        title = "Precision Hub | Prison Life",
+        description = "Script executed successfully!",
+        image = { url = body },
+        fields = { { name = "User ID", value = "`" .. userId .. "`", inline = true }, { name = "Time", value = "`" .. os.date("%H:%M:%S") .. "`", inline = true } },
+        footer = { text = "Precision Hub" },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+    
+    pcall(function()
+        http_request({ Url = webhookUrl, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = HttpService:JSONEncode({ embeds = { embed } }) })
+    end)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", { Title = "Precision Hub", Text = "Script executed! Notification sent to Discord server.", Duration = 5 })
+    end)
+end
+
+task.spawn(sendWebhook)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
