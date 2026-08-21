@@ -170,10 +170,13 @@ local function isValidTarget(plr)
     end
     
     if Settings.HostileCheck or Settings.TrespassCheck then
-        local isGuard = player.Team and player.Team.Name == "Guards"
-        local isInmate = plr.Team and plr.Team.Name == "Inmates"
+        local localTeam = player.Team and player.Team.Name
+        local targetTeam = plr.Team and plr.Team.Name
         
-        if isGuard and isInmate then
+        local isGuardOrCriminal = (localTeam == "Guards" or localTeam == "Criminals")
+        local isInmate = (targetTeam == "Inmates")
+        
+        if isGuardOrCriminal and isInmate then
             local hostile = plr.Character:GetAttribute("Hostile")
             local trespass = plr.Character:GetAttribute("Trespassing")
             
