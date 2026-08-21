@@ -18,6 +18,9 @@ local Window = Library:CreateWindow({
     Icon = 83140129251904,
     NotifySide = "Right",
     ShowCustomCursor = true,
+    Size = UDim2.fromOffset(560, 420), -- tamanho da janela (largura, altura)
+    Center = true,
+    Resizable = true, -- deixa você redimensionar arrastando a borda também
 })
 
 -- ============ TABS ============
