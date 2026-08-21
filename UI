@@ -6,12 +6,12 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.7",
+  SubTitle = "by 2knw | Version 0.1.8",
   SaveFolder = "PrecisionPrisonLife"
 })
 
 Window:AddMinimizeButton({
-    Button = { Image = "rbxassetid://135581806940866", BackgroundTransparency = 1 },
+    Button = { Image = "rbxassetid://83140129251904", BackgroundTransparency = 1 },
     Corner = { CornerRadius = UDim.new(35, 1) },
 })
 
@@ -277,14 +277,29 @@ AimbotTab:AddSlider({
 })
 
 -- ============ TARGET ON SECTION ============
+local targetOptions = {}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(targetOptions, plr.Name)
+    end
+end
+
+local ignoreTargetOptions = {}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(ignoreTargetOptions, plr.Name)
+    end
+end
+
 local targetDropdown = AimbotTab:AddDropdown({
     Name = "Target On",
-    Description = "Select a specific player to target",
+    Description = "Select specific players to target",
     Options = targetOptions,
-    Default = "None",
+    Default = {},
+    Multi = true,
     Callback = function(Value)
-        if not Value or Value == "None" then  
-            getgenv().SilentAimSettings.TargetOnPlayer = nil
+        if not Value or #Value == 0 then
+            getgenv().SilentAimSettings.TargetOnPlayer = {}
         else
             getgenv().SilentAimSettings.TargetOnPlayer = Value
         end
@@ -292,16 +307,40 @@ local targetDropdown = AimbotTab:AddDropdown({
 })
 
 AimbotTab:AddButton({"Reset Target", function()
-    getgenv().SilentAimSettings.TargetOnPlayer = nil
+    getgenv().SilentAimSettings.TargetOnPlayer = {}
     
-    local newOptions = {"None"}
+    local newOptions = {}
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= player then
             table.insert(newOptions, plr.Name)
         end
     end
     
-    targetDropdown:Set(newOptions)  
+    targetDropdown:Set(newOptions)
+end})
+
+local ignoreTargetDropdown = AimbotTab:AddDropdown({
+    Name = "Ignore Target",
+    Description = "Select players to completely ignore",
+    Options = ignoreTargetOptions,
+    Default = {},
+    Multi = true,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.IgnoreTargets = Value or {}
+    end
+})
+
+AimbotTab:AddButton({"Reset Ignore List", function()
+    getgenv().SilentAimSettings.IgnoreTargets = {}
+    
+    local newOptions = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(newOptions, plr.Name)
+        end
+    end
+    
+    ignoreTargetDropdown:Set(newOptions)
 end})
 
 
