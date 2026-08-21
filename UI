@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Precision Hub | Prison Life",
-  SubTitle = "by 2knw | Version 0.1.6",
+  SubTitle = "by 2knw | Version 0.1.7",
   SaveFolder = "PrecisionPrisonLife"
 })
 
@@ -385,10 +385,20 @@ VisualsTab:AddToggle({
         game:GetService("Lighting").FogStart = 100000
     else
         game:GetService("Lighting").FogEnd = 5000
-        game:GetService("Lighting").FogStart = 0
+        game:GetService("Lighting").FogStart = 500
     end
   end,
   Flag = "FogRemoved"
+})
+
+VisualsTab:AddToggle({
+  Name = "Toggle Rain",
+  Description = "Makes it rain with sound effect",
+  Default = false,
+  Callback = function(v)
+    toggleRain(v)
+  end,
+  Flag = "RainToggle"
 })
 
 VisualsTab:AddDropdown({
