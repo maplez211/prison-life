@@ -30,7 +30,8 @@ local Tabs = {
     ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
 
-Window:SelectTab(Tabs.Main)
+-- A primeira Tab criada (Main) já fica selecionada automaticamente,
+-- não existe Window:SelectTab() na Obsidian Library.
 
 -- ============ MAIN TAB ============
 local MainGroupBox = Tabs.Main:AddGroupbox({
@@ -560,7 +561,7 @@ MenuGroup:AddToggle("ShowCustomCursor", {
 
 MenuGroup:AddToggle("AlwaysOnTop", {
     Text = "Always On Top",
-    Default = Window.AlwaysOnTop,
+    Default = false,
     Callback = function(Value)
         Window:SetAlwaysOnTop(Value)
     end,
