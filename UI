@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.2.8 | by 2knw",
+    Footer = "Version 0.3.0| by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -34,6 +34,28 @@ local Tabs = {
 }
 
 Library:SetDPIScale(90)
+
+-- ============ CUSTOM MOBILE TOGGLE BUTTON (imagem no lugar de texto, sem Lock) ============
+if Library.IsMobile then
+    local CustomToggleButton = Library:AddDraggableButton({
+        Text = "",
+        Callback = function()
+            Library:Toggle()
+        end,
+    })
+
+    CustomToggleButton.Button.Size = UDim2.fromOffset(40, 40)
+    CustomToggleButton.Button.AutoButtonColor = false
+
+    local ToggleIcon = Instance.new("ImageLabel")
+    ToggleIcon.BackgroundTransparency = 1
+    ToggleIcon.Image = "rbxassetid://82328256663699"
+    ToggleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+    ToggleIcon.Position = UDim2.fromScale(0.5, 0.5)
+    ToggleIcon.Size = UDim2.new(0, 35, 0, 35)
+    ToggleIcon.Parent = CustomToggleButton.Button
+end
+
 -- ============ PLAYERS TAB ============
 local PlayerSettingsBox = Tabs.Players:AddGroupbox({
     Name = "Player",
@@ -235,33 +257,6 @@ AimbotLeftBox:AddToggle("FriendCheck", {
     end,
 })
 
-AimbotLeftBox:AddToggle("IgnoreInmates", {
-    Text = "Ignore Inmates",
-    Tooltip = "Ignore Inmate Players",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.IgnoreInmates = v
-    end,
-})
-
-AimbotLeftBox:AddToggle("IgnoreGuards", {
-    Text = "Ignore Guards",
-    Tooltip = "Ignore Guard Players",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.IgnoreGuards = v
-    end,
-})
-
-AimbotLeftBox:AddToggle("IgnoreCriminals", {
-    Text = "Ignore Criminals",
-    Tooltip = "Ignore Criminal Players",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.IgnoreCriminals = v
-    end,
-})
-
 AimbotLeftBox:AddToggle("HostileCheck", {
     Text = "Hostile Check",
     Tooltip = "Only target hostile inmates",
@@ -279,6 +274,18 @@ AimbotLeftBox:AddToggle("TrespassCheck", {
         getgenv().SilentAimSettings.TrespassCheck = v
     end,
 })
+
+AimbotLeftBox:AddDropdown("TargetTeams", {
+    Values = {"Inmates", "Guards", "Criminals"},
+    Multi = true,
+    Text = "Target Teams",
+    Tooltip = "Selected teams are the ones Silent Aim will target (deselect a team to ignore it)",
+    Callback = function(Value)
+        getgenv().SilentAimSettings.TargetTeams = Value or {}
+    end,
+})
+
+Options.TargetTeams:SetValue({ Inmates = true, Guards = true, Criminals = true })
 
 -- ============ AIMBOT SLIDERS ============
 local AimbotMidBox = Tabs.Aimbot:AddGroupbox({
@@ -610,18 +617,27 @@ local TeleportsBox = Tabs.Teleports:AddGroupbox({
 
 local teleports = {
     {"Nexus 1", Vector3.new(864, 100, 2406)},
-    {"Nexus 2", Vector3.new(969, 100, 2289)},
+    {"Nexus 2", Vector3.new(997, 102, 2318},
     {"Cells", Vector3.new(889, 100, 2500)},
-    {"Cafeteria", Vector3.new(964, 103, 2286)},
-    {"Kitchen", Vector3.new(965, 100, 2240)},
     {"Yard", Vector3.new(801, 98, 2499)},
+    {"Cafeteria", Vector3.new(964, 103, 2286)},
+    {"Ventilation Ducts", Vector3.new(902, 124, 2216)},
+    {"Kitchen", Vector3.new(965, 100, 2240)},
+    {"Roof 1", Vector3.new(920, 132, 2243)},
+    {"Roof 2", Vector3.new(785, 119, 2244)},
     {"Armory", Vector3.new(803, 108, 2257)},
     {"Break Room", Vector3.new(794, 101, 2246)},
+    {"Outside Spot", Vector3.new(809, 98, 2221)},
     {"Entrance", Vector3.new(737, 100, 2287)},
+    {"Secret Room", Vector3.new(728, 100, 2316)},
+    {"Garage", Vector3.new(582, 98, 2490},
+    {"Open Gate Room", Vector3.new(497, 102, 2263)},
     {"Front Wall 1", Vector3.new(510, 122, 2327)},
     {"Front Wall 2", Vector3.new(505, 122, 2143)},
-    {"Guard Tower 1", Vector3.new(825, 126, 2072)},
-    {"Guard Tower 2", Vector3.new(816, 126, 2582)},
+    {"Front Guard Tower 1", Vector3.new(509, 126, 2597)},
+    {"Front Guard Tower 2", Vector3.new(498, 126, 2062)},
+    {"Guard Tower 1", Vector3.new(816, 126, 2582)},
+    {"Guard Tower 2", Vector3.new(825, 126, 2072)},
     {"Sewage", Vector3.new(917, 79, 2102)},
     {"Escape the Prison", Vector3.new(840, 98, 2598)},
 }
