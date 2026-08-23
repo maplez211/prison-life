@@ -37,7 +37,7 @@ getgenv().SilentAimSettings = {
     TracerThickness = 0.2,
     TracerESPEnabled = false,
     TracerTargetOnly = false,
-    UnlimitedAmmo = false,
+    Autoshoot = false,
     SilentAimRange = 500,
     CameraFOV = 70,
     TargetOnPlayer = {},
@@ -696,34 +696,21 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ============ WEAPON MODDING ============
-local function getCurrentWeapon()
-    local char = player.Character
-    if not char then return nil end
-    for _, child in ipairs(char:GetChildren()) do
-        if child:IsA("Tool") then
-            local isWeapon = child:GetAttribute("isWeapon")
-            if isWeapon == true or isWeapon == "true" then
-                return child
-            end
-        end
-    end
-    return nil
-end
+-- ============ AUTOSHOOT ============
+local lastAutoShot = 0
+local AutoShotDelay = 0.1
 
-local lastWeaponCheck = 0
 RunService.Heartbeat:Connect(function()
-    if not Settings.UnlimitedAmmo then return end
-    local now = tick()
-    if now - lastWeaponCheck < 0.05 then return end
-    lastWeaponCheck = now
-    local weapon = getCurrentWeapon()
-    if not weapon then return end
-    pcall(function()
-        local magSize = weapon:GetAttribute("magSize") or 30
-        weapon:SetAttribute("ammo", magSize)
-        weapon:SetAttribute("magAmmo", magSize)
-    end)
+    if not Settings.Enabled or not Settings.Autoshoot then return end
+    if not currentTarget or not currentTarget.Parent then return end
+    if tick() - lastAutoShot > AutoShotDelay then
+        lastAutoShot = tick()
+        task.spawn(function()
+            mouse1press()
+            task.wait(0.01)
+            mouse1release()
+        end)
+    end
 end)
 
 -- ============ KEYBINDS ============
