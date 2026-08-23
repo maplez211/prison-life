@@ -255,6 +255,15 @@ AimbotLeftBox:AddToggle("SilentAim", {
     end,
 })
 
+AimbotLeftBox:AddToggle("Autoshoot", {
+    Text = "Autoshoot",
+    Tooltip = "Automatically fires when Silent Aim has a locked target",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.Autoshoot = v
+    end,
+})
+
 AimbotLeftBox:AddToggle("WallCheck", {
     Text = "Wall Check",
     Tooltip = "Ignore Players behind Walls",
@@ -465,21 +474,6 @@ FOVBox:AddToggle("HideFOV", {
     Default = false,
     Callback = function(v)
         toggleFOVCircle(v)
-    end,
-})
-
--- ============ WEAPON MODDING ============
-local WeaponModBox = Tabs.Aimbot:AddGroupbox({
-    Name = "Weapon Modding",
-    Side = "Right",
-})
-
-WeaponModBox:AddToggle("UnlimitedAmmo", {
-    Text = "Unlimited Ammo",
-    Tooltip = "Keeps your current weapon's ammo full",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.UnlimitedAmmo = v
     end,
 })
 
