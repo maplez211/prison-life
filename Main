@@ -38,6 +38,7 @@ getgenv().SilentAimSettings = {
     TracerESPEnabled = false,
     TracerTargetOnly = false,
     SilentAimRange = 500,
+    CameraFOV = 70,
     TargetOnPlayer = {},
     IgnoreTargets = {}
 }
@@ -560,6 +561,10 @@ task.spawn(function()
 end)
 
 RunService.RenderStepped:Connect(function()
+    if workspace.CurrentCamera and Settings.CameraFOV then
+        workspace.CurrentCamera.FieldOfView = Settings.CameraFOV
+    end
+
     updateFOVPosition()
     
     if fovCircle then
