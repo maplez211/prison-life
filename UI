@@ -18,7 +18,7 @@ local Window = Library:CreateWindow({
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
-    Size = UDim2.fromOffset(550, 500), 
+    Size = UDim2.fromOffset(650, 600), 
     Center = true,
     Resizable = true, 
     SidebarCompacted = true,
@@ -37,25 +37,52 @@ local Tabs = {
 
 Library:SetDPIScale(90)
 
--- ============ CUSTOM MOBILE TOGGLE BUTTON (imagem no lugar de texto, sem Lock) ============
+-- ============ MOBILE BUTTON ============
 if Library.IsMobile then
-    local CustomToggleButton = Library:AddDraggableButton({
-        Text = "",
-        Callback = function()
-            Library:Toggle()
-        end,
-    })
+    local CustomToggleButton = Instance.new("ImageButton")
+    CustomToggleButton.Name = "CustomToggleButton"
+    CustomToggleButton.BackgroundColor3 = Library.Scheme.BackgroundColor
+    CustomToggleButton.Image = "rbxassetid://82328256663699"
+    CustomToggleButton.ScaleType = Enum.ScaleType.Fit
+    CustomToggleButton.Size = UDim2.fromOffset(40, 40)
+    CustomToggleButton.Position = UDim2.fromOffset(6, 6)
+    CustomToggleButton.ZIndex = 10
+    CustomToggleButton.Parent = Library.ScreenGui
 
-    CustomToggleButton.Button.Size = UDim2.fromOffset(40, 40)
-    CustomToggleButton.Button.AutoButtonColor = false
+    local ToggleButtonCorner = Instance.new("UICorner")
+    ToggleButtonCorner.CornerRadius = UDim.new(0, Library.CornerRadius)
+    ToggleButtonCorner.Parent = CustomToggleButton
 
-    local ToggleIcon = Instance.new("ImageLabel")
-    ToggleIcon.BackgroundTransparency = 1
-    ToggleIcon.Image = "rbxassetid://82328256663699"
-    ToggleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-    ToggleIcon.Position = UDim2.fromScale(0.5, 0.5)
-    ToggleIcon.Size = UDim2.new(1, -12, 1, -12)
-    ToggleIcon.Parent = CustomToggleButton.Button
+    Library:AddOutline(CustomToggleButton)
+    Library:MakeDraggable(CustomToggleButton, CustomToggleButton, true)
+
+    if not table.find(Library.DraggableElements, CustomToggleButton) then
+        table.insert(Library.DraggableElements, CustomToggleButton)
+    end
+
+    CustomToggleButton.InputBegan:Connect(function(Input)
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+
+        local Start = tick()
+        local Changed
+        Changed = Input.Changed:Connect(function()
+            if Input.UserInputState ~= Enum.UserInputState.End then
+                return
+            end
+
+            local IsLikelyDragging = tick() - Start > 0.25
+            if not IsLikelyDragging then
+                Library:Toggle()
+            end
+
+            if Changed and Changed.Connected then
+                Changed:Disconnect()
+                Changed = nil
+            end
+        end)
+    end)
 end
 
 -- ============ PLAYERS TAB ============
