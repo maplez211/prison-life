@@ -547,10 +547,12 @@ end
 local function highlightTarget(targetPlayer)
     if not targetPlayer or not targetPlayer.Character then return end
     
+    local targetColor = Settings.ESPTargetColor or Color3.fromRGB(255, 182, 255)
+    
     local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
     if highlight and highlight:IsA("Highlight") then
-        highlight.FillColor = Color3.fromRGB(255, 182, 255)
-        highlight.OutlineColor = Color3.fromRGB(255, 182, 255)
+        highlight.FillColor = targetColor
+        highlight.OutlineColor = targetColor
         highlight.FillTransparency = 0.65
         highlight.OutlineTransparency = 0
     end
@@ -561,7 +563,7 @@ local function highlightTarget(targetPlayer)
         if billboard then
             local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
             if label then
-                label.TextColor3 = Color3.fromRGB(255, 182, 255)
+                label.TextColor3 = targetColor
                 label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
             end
         end
@@ -819,6 +821,36 @@ function setFOVColor(name)
     if fovCircle and fovCircle:FindFirstChild("UIStroke") then
         fovCircle.UIStroke.Color = color
     end
+end
+
+-- ============ COLOR PICKER HANDLE ============
+
+function setFOVColorRGB(color)
+    if fovRainbowConnection then
+        fovRainbowConnection:Disconnect()
+        fovRainbowConnection = nil
+    end
+    Settings.FOVColor = color
+    if fovCircle and fovCircle:FindFirstChild("UIStroke") then
+        fovCircle.UIStroke.Color = color
+    end
+end
+
+function setFogColorRGB(color)
+    Lighting.FogColor = color
+end
+
+function setTracerColorRGB(color)
+    Settings.TracerColor = color
+    if targetBeam then
+        targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
+    end
+end
+
+getgenv().SilentAimSettings.ESPTargetColor = Color3.fromRGB(255, 182, 255)
+
+function setESPTargetColorRGB(color)
+    Settings.ESPTargetColor = color
 end
 
 -- ============ TRACER COLOR SYSTEM ============
