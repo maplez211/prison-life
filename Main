@@ -701,8 +701,11 @@ local function getCurrentWeapon()
     local char = player.Character
     if not char then return nil end
     for _, child in ipairs(char:GetChildren()) do
-        if child:IsA("Tool") and child:GetAttribute("isWeapon") == "true" then
-            return child
+        if child:IsA("Tool") then
+            local isWeapon = child:GetAttribute("isWeapon")
+            if isWeapon == true or isWeapon == "true" then
+                return child
+            end
         end
     end
     return nil
