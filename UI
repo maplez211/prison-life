@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.1 | by 2knw",
+    Footer = "Version 0.3.2 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -31,7 +31,7 @@ local Tabs = {
     Aimbot = Window:AddTab("Combat", "crosshair"),
     Players = Window:AddTab("Player", "user"),
     Visuals = Window:AddTab("Visuals", "eye"),
-    Teleports = Window:AddTab("Teleports", "map-pin"),
+    Teleports = Window:AddTab("Weapons & Shop", "shopping-basket"),
     ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
 
@@ -87,7 +87,7 @@ end
 
 -- ============ PLAYERS TAB ============
 local PlayerSettingsBox = Tabs.Players:AddGroupbox({
-    Name = "Player",
+    Name = "Misc",
     Side = "Left",
 })
 
