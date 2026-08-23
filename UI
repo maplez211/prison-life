@@ -14,14 +14,15 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.0| by 2knw",
+    Footer = "Version 0.3.0 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
-    Size = UDim2.fromOffset(590, 530), 
+    Size = UDim2.fromOffset(550, 500), 
     Center = true,
     Resizable = true, 
-    SidebarCompacted = true, 
+    SidebarCompacted = true,
+    ShowMobileButtons = false, 
 })
 
 -- ============ TABS ============
@@ -34,6 +35,27 @@ local Tabs = {
 }
 
 Library:SetDPIScale(90)
+
+-- ============ CUSTOM MOBILE TOGGLE BUTTON (imagem no lugar de texto, sem Lock) ============
+if Library.IsMobile then
+    local CustomToggleButton = Library:AddDraggableButton({
+        Text = "",
+        Callback = function()
+            Library:Toggle()
+        end,
+    })
+
+    CustomToggleButton.Button.Size = UDim2.fromOffset(40, 40)
+    CustomToggleButton.Button.AutoButtonColor = false
+
+    local ToggleIcon = Instance.new("ImageLabel")
+    ToggleIcon.BackgroundTransparency = 1
+    ToggleIcon.Image = "rbxassetid://82328256663699"
+    ToggleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+    ToggleIcon.Position = UDim2.fromScale(0.5, 0.5)
+    ToggleIcon.Size = UDim2.new(1, -12, 1, -12)
+    ToggleIcon.Parent = CustomToggleButton.Button
+end
 
 -- ============ PLAYERS TAB ============
 local PlayerSettingsBox = Tabs.Players:AddGroupbox({
@@ -596,7 +618,7 @@ local TeleportsBox = Tabs.Teleports:AddGroupbox({
 
 local teleports = {
     {"Nexus 1", Vector3.new(864, 100, 2406)},
-    {"Nexus 2", Vector3.new(997, 102, 2318},
+    {"Nexus 2", Vector3.new(997, 102, 2318)},
     {"Cells", Vector3.new(889, 100, 2500)},
     {"Yard", Vector3.new(801, 98, 2499)},
     {"Cafeteria", Vector3.new(964, 103, 2286)},
@@ -609,7 +631,7 @@ local teleports = {
     {"Outside Spot", Vector3.new(809, 98, 2221)},
     {"Entrance", Vector3.new(737, 100, 2287)},
     {"Secret Room", Vector3.new(728, 100, 2316)},
-    {"Garage", Vector3.new(582, 98, 2490},
+    {"Garage", Vector3.new(582, 98, 2490)},
     {"Open Gate Room", Vector3.new(497, 102, 2263)},
     {"Front Wall 1", Vector3.new(510, 122, 2327)},
     {"Front Wall 2", Vector3.new(505, 122, 2143)},
