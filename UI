@@ -14,11 +14,11 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.2.7 | by 2knw",
+    Footer = "Version 0.2.8 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
-    Size = UDim2.fromOffset(550, 500), 
+    Size = UDim2.fromOffset(590, 530), 
     Center = true,
     Resizable = true, 
     SidebarCompacted = true, 
@@ -562,6 +562,45 @@ TracerBox:AddLabel("Target Tracer Color"):AddColorPicker("TracerColor", {
         setTracerColorRGB(Value)
     end,
 })
+
+-- ============ COLOR PICKER SCREEN CLAMP FIX ============
+local function ClampColorPickerToScreen(OptionIdx)
+    local CP = Options[OptionIdx]
+    if not CP or not CP.ColorMenu then return end
+
+    local ColorMenu = CP.ColorMenu
+    local OriginalOpen = ColorMenu.Open
+
+    ColorMenu.Open = function(self, ...)
+        OriginalOpen(self, ...)
+
+        task.defer(function()
+            local Camera = workspace.CurrentCamera
+            if not Camera then return end
+
+            local ViewportSize = Camera.ViewportSize
+            local MenuSize = self.Menu.AbsoluteSize
+            local Margin = 8
+
+            local CurrentPos = self.Menu.Position
+            local X = CurrentPos.X.Offset
+            local Y = CurrentPos.Y.Offset
+
+            local MaxX = math.max(Margin, ViewportSize.X - MenuSize.X - Margin)
+            local MaxY = math.max(Margin, ViewportSize.Y - MenuSize.Y - Margin)
+
+            X = math.clamp(X, Margin, MaxX)
+            Y = math.clamp(Y, Margin, MaxY)
+
+            self.Menu.Position = UDim2.fromOffset(X, Y)
+        end)
+    end
+end
+
+ClampColorPickerToScreen("FOVColor")
+ClampColorPickerToScreen("ESPTargetColor")
+ClampColorPickerToScreen("FogColor")
+ClampColorPickerToScreen("TracerColor")
 
 -- ============ TELEPORTS TAB ============
 local TeleportsBox = Tabs.Teleports:AddGroupbox({
