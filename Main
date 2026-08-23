@@ -698,7 +698,13 @@ end)
 
 -- ============ AUTOSHOOT ============
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local shootRemote = ReplicatedStorage:WaitForChild("ShootRemote"):WaitForChild("RemoteEvent")
+local shootRemote = nil
+pcall(function()
+    local gunRemotes = ReplicatedStorage:WaitForChild("GunRemotes", 5)
+    if gunRemotes then
+        shootRemote = gunRemotes:WaitForChild("ShootEvent", 5)
+    end
+end)
 
 local function getEquippedWeapon()
     local char = player.Character
@@ -712,40 +718,27 @@ local function getEquippedWeapon()
 end
 
 local lastAutoShot = 0
+local AutoShotDelay = 0.15
 
 RunService.Heartbeat:Connect(function()
+    if not shootRemote then return end
     if not Settings.Enabled or not Settings.Autoshoot then return end
     if not currentTarget or not currentTarget.Parent then return end
 
     local weapon = getEquippedWeapon()
     if not weapon then return end
 
-    local cooldown = weapon:GetAttribute("fireRate") or 0.15
-    if (tick() - lastAutoShot) < cooldown then return end
-
-    local char = player.Character
-    local gun = char and char:FindFirstChild("Gun")
-    if not gun then return end
-
-    local muzzle = weapon:FindFirstChild("Muzzle")
-    local muzzlePos = (muzzle and muzzle.Position) or gun.Position
-
-    local magAmmo = weapon:GetAttribute("ammo") or weapon:GetAttribute("magAmmo") or 0
-    if magAmmo <= 0 then return end
-
-    local isHit = weapon:GetAttribute("isHit") == "true"
-    if not isHit then return end
-
+    if (tick() - lastAutoShot) < AutoShotDelay then return end
     lastAutoShot = tick()
 
-    local shots = weapon:GetAttribute("shots") or 1
-    local bulletData = {}
-    for i = 1, shots do
-        bulletData[i] = {muzzlePos, currentTarget.Position, currentTarget}
-    end
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local muzzlePos = hrp and hrp.Position or camera.CFrame.Position
 
-    shootRemote:FireServer(bulletData)
-    weapon:SetAttribute("ammo", magAmmo - 1)
+    local origin = vector.create(muzzlePos.X, muzzlePos.Y, muzzlePos.Z)
+    local targetPos = vector.create(currentTarget.Position.X, currentTarget.Position.Y, currentTarget.Position.Z)
+
+    shootRemote:FireServer({ origin, targetPos, currentTarget })
 end)
 
 -- ============ KEYBINDS ============
