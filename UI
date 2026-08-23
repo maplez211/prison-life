@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.0 | by 2knw",
+    Footer = "Version 0.3.1 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -22,7 +22,8 @@ local Window = Library:CreateWindow({
     Center = true,
     Resizable = true, 
     SidebarCompacted = true,
-    ShowMobileButtons = false, 
+    ShowMobileButtons = false,
+    CornerRadius = 20,
 })
 
 -- ============ TABS ============
@@ -71,6 +72,7 @@ PlayerSettingsBox:AddSlider("CameraFOV", {
     Max = 120,
     Rounding = 0,
     Callback = function(Value)
+        getgenv().SilentAimSettings.CameraFOV = Value
         workspace.CurrentCamera.FieldOfView = Value
     end,
 })
@@ -347,6 +349,7 @@ TargetBox:AddDropdown("TargetOn", {
     Text = "Target On",
     Tooltip = "Select specific players to target",
     Multi = true,
+    AllowNull = true,
     Callback = function(Value)
         if not Value or #Value == 0 then
             getgenv().SilentAimSettings.TargetOnPlayer = {}
@@ -367,6 +370,7 @@ TargetBox:AddButton({
             end
         end
         Options.TargetOn:SetValues(newOptions)
+        Options.TargetOn:SetValue({})
     end,
 })
 
@@ -376,6 +380,7 @@ TargetBox:AddDropdown("IgnoreTarget", {
     Text = "Ignore Target",
     Tooltip = "Select players to completely ignore",
     Multi = true,
+    AllowNull = true,
     Callback = function(Value)
         getgenv().SilentAimSettings.IgnoreTargets = Value or {}
     end,
@@ -392,6 +397,7 @@ TargetBox:AddButton({
             end
         end
         Options.IgnoreTarget:SetValues(newOptions)
+        Options.IgnoreTarget:SetValue({})
     end,
 })
 
@@ -691,17 +697,6 @@ MenuGroup:AddDropdown("NotificationSide", {
     Text = "Notification Side",
     Callback = function(Value)
         Library:SetNotifySide(Value)
-    end,
-})
-
-MenuGroup:AddSlider("UICornerSlider", {
-    Text = "Corner Radius",
-    Default = Library.CornerRadius,
-    Min = 0,
-    Max = 20,
-    Rounding = 0,
-    Callback = function(value)
-        Window:SetCornerRadius(value)
     end,
 })
 
