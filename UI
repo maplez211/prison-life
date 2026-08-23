@@ -435,15 +435,6 @@ VisualsLeftBox:AddToggle("ESP", {
     end,
 })
 
-VisualsLeftBox:AddToggle("TracerESP", {
-    Text = "Tracer ESP",
-    Tooltip = "Shows the beam tracer to your target",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.TracerESPEnabled = v
-    end,
-})
-
 VisualsLeftBox:AddToggle("HideESPNames", {
     Text = "Hide ESP Names",
     Tooltip = "Hides the names above players when ESP is active",
@@ -484,16 +475,6 @@ CustomBox:AddToggle("ToggleRain", {
     end,
 })
 
-CustomBox:AddDropdown("TracerColor", {
-    Values = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
-    Default = "Pink",
-    Text = "Tracer Color",
-    Tooltip = "Choose the Tracer beam color",
-    Callback = function(Value)
-        setTracerColor(Value)
-    end,
-})
-
 CustomBox:AddDropdown("FogColor", {
     Values = {"Default", "Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
     Default = "Default",
@@ -511,6 +492,31 @@ CustomBox:AddDropdown("Skyboxes", {
     Tooltip = "Choose your skybox",
     Callback = function(Value)
         setSkybox(Value)
+    end,
+})
+
+-- ============ TRACER ESP SECTION ============
+local TracerBox = Tabs.Visuals:AddGroupbox({
+    Name = "Tracer ESP",
+    Side = "Right",
+})
+
+TracerBox:AddToggle("TracerESP", {
+    Text = "Tracer ESP",
+    Tooltip = "Shows the beam tracer to your target",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.TracerESPEnabled = v
+    end,
+})
+
+TracerBox:AddDropdown("TracerColor", {
+    Values = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
+    Default = "Pink",
+    Text = "Tracer Color",
+    Tooltip = "Choose the Tracer beam color",
+    Callback = function(Value)
+        setTracerColor(Value)
     end,
 })
 
