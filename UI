@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.2 | by 2knw",
+    Footer = "Version 0.3.3 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -86,7 +86,7 @@ if Library.IsMobile then
 end
 
 -- ============ PLAYERS TAB ============
-local PlayerSettingsBox = Tabs.Players:AddGroupbox({
+local PlayerSettingsBox = Tabs.Teleports:AddGroupbox({
     Name = "Misc",
     Side = "Left",
 })
@@ -646,7 +646,7 @@ ClampColorPickerToScreen("TracerColor")
 -- ============ TELEPORTS TAB ============
 local TeleportsBox = Tabs.Teleports:AddGroupbox({
     Name = "Teleports",
-    Side = "Left",
+    Side = "Right",
 })
 
 local teleports = {
