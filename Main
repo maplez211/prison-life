@@ -697,20 +697,55 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ============ AUTOSHOOT ============
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local shootRemote = ReplicatedStorage:WaitForChild("ShootRemote"):WaitForChild("RemoteEvent")
+
+local function getEquippedWeapon()
+    local char = player.Character
+    if not char then return nil end
+    for _, child in ipairs(char:GetChildren()) do
+        if child:IsA("Tool") then
+            return child
+        end
+    end
+    return nil
+end
+
 local lastAutoShot = 0
-local AutoShotDelay = 0.1
 
 RunService.Heartbeat:Connect(function()
     if not Settings.Enabled or not Settings.Autoshoot then return end
     if not currentTarget or not currentTarget.Parent then return end
-    if tick() - lastAutoShot > AutoShotDelay then
-        lastAutoShot = tick()
-        task.spawn(function()
-            mouse1press()
-            task.wait(0.01)
-            mouse1release()
-        end)
+
+    local weapon = getEquippedWeapon()
+    if not weapon then return end
+
+    local cooldown = weapon:GetAttribute("fireRate") or 0.15
+    if (tick() - lastAutoShot) < cooldown then return end
+
+    local char = player.Character
+    local gun = char and char:FindFirstChild("Gun")
+    if not gun then return end
+
+    local muzzle = weapon:FindFirstChild("Muzzle")
+    local muzzlePos = (muzzle and muzzle.Position) or gun.Position
+
+    local magAmmo = weapon:GetAttribute("ammo") or weapon:GetAttribute("magAmmo") or 0
+    if magAmmo <= 0 then return end
+
+    local isHit = weapon:GetAttribute("isHit") == "true"
+    if not isHit then return end
+
+    lastAutoShot = tick()
+
+    local shots = weapon:GetAttribute("shots") or 1
+    local bulletData = {}
+    for i = 1, shots do
+        bulletData[i] = {muzzlePos, currentTarget.Position, currentTarget}
     end
+
+    shootRemote:FireServer(bulletData)
+    weapon:SetAttribute("ammo", magAmmo - 1)
 end)
 
 -- ============ KEYBINDS ============
