@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.2.2 | by 2knw",
+    Footer = "Version 0.2.3 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -402,13 +402,13 @@ FOVBox:AddSlider("FOVSize", {
     end,
 })
 
-FOVBox:AddDropdown("FOVColor", {
-    Values = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White", "Rainbow"},
-    Default = "White",
+FOVBox:AddColorPicker("FOVColor", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "FOV Color",
     Text = "FOV Color",
     Tooltip = "Choose the FOV circle color",
     Callback = function(Value)
-        setFOVColor(Value)
+        setFOVColorRGB(Value)
     end,
 })
 
@@ -432,6 +432,16 @@ VisualsLeftBox:AddToggle("ESP", {
     Callback = function(v)
         getgenv().SilentAimSettings.ESPEnabled = v
         updateESP()
+    end,
+})
+
+VisualsLeftBox:AddColorPicker("ESPTargetColor", {
+    Default = Color3.fromRGB(255, 182, 255),
+    Title = "ESP Target Color",
+    Text = "Target Highlight Color",
+    Tooltip = "Cor do highlight quando um player é seu target",
+    Callback = function(Value)
+        setESPTargetColorRGB(Value)
     end,
 })
 
@@ -475,13 +485,13 @@ CustomBox:AddToggle("ToggleRain", {
     end,
 })
 
-CustomBox:AddDropdown("FogColor", {
-    Values = {"Default", "Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
-    Default = "Default",
+CustomBox:AddColorPicker("FogColor", {
+    Default = Color3.fromRGB(100, 100, 100),
+    Title = "Fog Color",
     Text = "Fog Color",
     Tooltip = "Choose the fog color",
     Callback = function(Value)
-        setFogColor(Value)
+        setFogColorRGB(Value)
     end,
 })
 
@@ -510,13 +520,13 @@ TracerBox:AddToggle("TracerESP", {
     end,
 })
 
-TracerBox:AddDropdown("TracerColor", {
-    Values = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
-    Default = "Pink",
+TracerBox:AddColorPicker("TracerColor", {
+    Default = Color3.fromRGB(255, 182, 255),
+    Title = "Tracer Color",
     Text = "Tracer Color",
     Tooltip = "Choose the Tracer beam color",
     Callback = function(Value)
-        setTracerColor(Value)
+        setTracerColorRGB(Value)
     end,
 })
 
