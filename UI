@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.3 | by 2knw",
+    Footer = "Version 0.3.4 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -465,6 +465,21 @@ FOVBox:AddToggle("HideFOV", {
     Default = false,
     Callback = function(v)
         toggleFOVCircle(v)
+    end,
+})
+
+-- ============ WEAPON MODDING ============
+local WeaponModBox = Tabs.Aimbot:AddGroupbox({
+    Name = "Weapon Modding",
+    Side = "Right",
+})
+
+WeaponModBox:AddToggle("UnlimitedAmmo", {
+    Text = "Unlimited Ammo",
+    Tooltip = "Keeps your current weapon's ammo full",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.UnlimitedAmmo = v
     end,
 })
 
