@@ -29,13 +29,14 @@ getgenv().SilentAimSettings = {
     SpinbotSpeed = 0,
     ESPEnabled = false,
     ESPNamesEnabled = true,
+    ESPTargetColor = Color3.fromRGB(255, 182, 255),
     IgnoreInmates = false,
     IgnoreGuards = false,
     IgnoreCriminals = false,
     HostileCheck = false,
     TrespassCheck = false,
     TracerColor = Color3.fromRGB(255, 182, 255),
-    TracerThickness = 0.15,
+    TracerThickness = 0.2,
     TracerESPEnabled = false,
     TargetOnPlayer = {},
     IgnoreTargets = {}
@@ -72,78 +73,110 @@ function toggleFOVCircle(hide)
     end
 end
 
--- ============ BEAM SYSTEM ============
-local targetBeam = nil
+-- ============ TRACER BEAM SYSTEM (um beam por player) ============
+local tracerBeams = {} -- [player] = { Beam = , Start = , End = }
 
-local function removeTargetBeam()
-    if targetBeam then
-        if targetBeam.Beam then
-            targetBeam.Beam:Destroy()
-        end
-        if targetBeam.Start then
-            targetBeam.Start:Destroy()
-        end
-        if targetBeam.End then
-            targetBeam.End:Destroy()
-        end
-        targetBeam = nil
+local function removeTracerBeam(plr)
+    local data = tracerBeams[plr]
+    if data then
+        if data.Beam then data.Beam:Destroy() end
+        if data.Start then data.Start:Destroy() end
+        if data.End then data.End:Destroy() end
+        tracerBeams[plr] = nil
     end
 end
 
-local function updateTargetBeam()
-    if not Settings.ESPEnabled or not Settings.TracerESPEnabled then
-        removeTargetBeam()
-        return
+local function removeAllTracerBeams()
+    for plr, _ in pairs(tracerBeams) do
+        removeTracerBeam(plr)
     end
-    
-    if not currentTarget or not currentTarget.Parent then
-        removeTargetBeam()
-        return
+end
+
+-- Retorna a cor do tracer para um player específico:
+-- se ele for o target atual, usa a cor customizada (Settings.TracerColor)
+-- senão, usa a cor do time dele
+local function getPlayerTracerColor(plr)
+    if currentTarget and currentTarget.Parent and plr.Character and currentTarget.Parent == plr.Character then
+        return Settings.TracerColor
     end
-    
-    local targetPart = currentTarget
-    
+    if plr.TeamColor then
+        return plr.TeamColor.Color
+    elseif plr.Team and plr.Team.TeamColor then
+        return plr.Team.TeamColor.Color
+    end
+    return Settings.TracerColor
+end
+
+local function updateTracerBeam(plr)
+    local char = plr.Character
     local localChar = player.Character
     local localHRP = localChar and localChar:FindFirstChild("HumanoidRootPart")
-    
-    if not targetPart or not localHRP then
-        removeTargetBeam()
+    local targetHRP = char and char:FindFirstChild("HumanoidRootPart")
+
+    if not char or not localHRP or not targetHRP then
+        removeTracerBeam(plr)
         return
     end
-    
-    if targetBeam then
-        if targetBeam.Start.Parent ~= localHRP or targetBeam.End.Parent ~= targetPart then
-            removeTargetBeam()
+
+    local data = tracerBeams[plr]
+    if data then
+        if data.Start.Parent ~= localHRP or data.End.Parent ~= targetHRP then
+            removeTracerBeam(plr)
+            data = nil
         end
     end
-    
-    if not targetBeam then
+
+    if not data then
         local attachment0 = Instance.new("Attachment")
         attachment0.Parent = localHRP
-        
+
         local attachment1 = Instance.new("Attachment")
-        attachment1.Parent = targetPart
-        
+        attachment1.Parent = targetHRP
+
         local beam = Instance.new("Beam")
-        beam.Name = "TargetBeam"
+        beam.Name = "TracerBeam"
         beam.Attachment0 = attachment0
         beam.Attachment1 = attachment1
-        beam.Color = ColorSequence.new(Settings.TracerColor)
         beam.FaceCamera = true
-        beam.Width0 = Settings.TracerThickness
-        beam.Width1 = Settings.TracerThickness
-        beam.Parent = targetPart.Parent
-        
-        targetBeam = {
+        beam.Parent = targetHRP
+
+        data = {
             Beam = beam,
             Start = attachment0,
             End = attachment1
         }
+        tracerBeams[plr] = data
     end
-    
-    if targetBeam then
-        targetBeam.Beam.Enabled = true
-        targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
+
+    local color = getPlayerTracerColor(plr)
+    data.Beam.Color = ColorSequence.new(color)
+    data.Beam.Width0 = Settings.TracerThickness
+    data.Beam.Width1 = Settings.TracerThickness
+    data.Beam.Enabled = true
+end
+
+local function updateAllTracerBeams()
+    if not Settings.ESPEnabled or not Settings.TracerESPEnabled then
+        removeAllTracerBeams()
+        return
+    end
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            local char = plr.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if char and hum and hum.Health > 0 then
+                updateTracerBeam(plr)
+            else
+                removeTracerBeam(plr)
+            end
+        end
+    end
+
+    for plr, _ in pairs(tracerBeams) do
+        if not plr.Parent or plr == player then
+            removeTracerBeam(plr)
+        end
     end
 end
 
@@ -511,7 +544,7 @@ RunService.RenderStepped:Connect(function()
         smoothedTargetPosition = nil
     end
     
-    updateTargetBeam()
+    updateAllTracerBeams()
 end)
 
 local function resetAllHighlights()
@@ -636,7 +669,6 @@ UserInputService.InputBegan:Connect(function(input, processed)
         if not Settings.Enabled then
             currentTarget = nil
             smoothedTargetPosition = nil
-            removeTargetBeam()
         end
     end
 end)
@@ -764,66 +796,11 @@ end)
 
 Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
+    removeTracerBeam(plr)
 end)
-
--- ============ FOG COLOR SYSTEM ============
-function setFogColor(name)
-    local colors = {
-        ["Default"] = Color3.fromRGB(100, 100, 100), ["Black"] = Color3.fromRGB(0, 0, 0),
-        ["Red"] = Color3.fromRGB(255, 50, 50), ["Green"] = Color3.fromRGB(50, 255, 50),
-        ["Blue"] = Color3.fromRGB(50, 50, 255), ["Yellow"] = Color3.fromRGB(255, 255, 50),
-        ["Purple"] = Color3.fromRGB(128, 50, 128), ["Cyan"] = Color3.fromRGB(50, 255, 255),
-        ["Orange"] = Color3.fromRGB(255, 165, 50), ["Pink"] = Color3.fromRGB(255, 105, 180),
-        ["White"] = Color3.fromRGB(255, 255, 255)
-    }
-    local color = colors[name]
-    if color then Lighting.FogColor = color end
-end
 
 -- ============ FOV COLOR SYSTEM ============
 local fovRainbowConnection = nil
-
-function setFOVColor(name)
-    if fovRainbowConnection then
-        fovRainbowConnection:Disconnect()
-        fovRainbowConnection = nil
-    end
-    
-    if name == "Rainbow" then
-        local hue = 0
-        fovRainbowConnection = RunService.RenderStepped:Connect(function()
-            hue = (hue + 0.5) % 360
-            local color = Color3.fromHSV(hue / 360, 1, 1)
-            if fovCircle and fovCircle:FindFirstChild("UIStroke") then
-                fovCircle.UIStroke.Color = color
-            end
-        end)
-        return
-    end
-    
-    local colors = {
-        ["Black"] = Color3.fromRGB(0, 0, 0),
-        ["Red"] = Color3.fromRGB(255, 0, 0),
-        ["Green"] = Color3.fromRGB(0, 255, 0),
-        ["Blue"] = Color3.fromRGB(0, 0, 255),
-        ["Yellow"] = Color3.fromRGB(255, 255, 0),
-        ["Purple"] = Color3.fromRGB(128, 0, 128),
-        ["Cyan"] = Color3.fromRGB(0, 255, 255),
-        ["Orange"] = Color3.fromRGB(255, 165, 0),
-        ["Pink"] = Color3.fromRGB(255, 105, 180),
-        ["White"] = Color3.fromRGB(255, 255, 255)
-    }
-    
-    local color = colors[name]
-    if not color then return end
-    
-    Settings.FOVColor = color
-    if fovCircle and fovCircle:FindFirstChild("UIStroke") then
-        fovCircle.UIStroke.Color = color
-    end
-end
-
--- ============ COLOR PICKER HANDLE ============
 
 function setFOVColorRGB(color)
     if fovRainbowConnection then
@@ -842,38 +819,12 @@ end
 
 function setTracerColorRGB(color)
     Settings.TracerColor = color
-    if targetBeam then
-        targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
-    end
+    -- as cores dos beams são recalculadas automaticamente a cada frame
+    -- em updateAllTracerBeams(), então não precisa forçar update aqui
 end
-
-getgenv().SilentAimSettings.ESPTargetColor = Color3.fromRGB(255, 182, 255)
 
 function setESPTargetColorRGB(color)
     Settings.ESPTargetColor = color
-end
-
--- ============ TRACER COLOR SYSTEM ============
-
-function setTracerColor(name)
-    local colors = {
-        ["Black"] = Color3.fromRGB(0, 0, 0),
-        ["Red"] = Color3.fromRGB(255, 0, 0),
-        ["Green"] = Color3.fromRGB(0, 255, 0),
-        ["Blue"] = Color3.fromRGB(0, 0, 255),
-        ["Yellow"] = Color3.fromRGB(255, 255, 0),
-        ["Purple"] = Color3.fromRGB(128, 0, 128),
-        ["Cyan"] = Color3.fromRGB(0, 255, 255),
-        ["Orange"] = Color3.fromRGB(255, 165, 0),
-        ["Pink"] = Color3.fromRGB(255, 182, 255),
-        ["White"] = Color3.fromRGB(255, 255, 255)
-    }
-    if colors[name] then
-        Settings.TracerColor = colors[name]
-        if targetBeam then
-            targetBeam.Beam.Color = ColorSequence.new(Settings.TracerColor)
-        end
-    end
 end
 
 -- ============ RAIN SYSTEM ============
