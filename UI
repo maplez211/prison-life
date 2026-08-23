@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.2.5 | by 2knw",
+    Footer = "Version 0.2.6 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -508,7 +508,7 @@ CustomBox:AddDropdown("Skyboxes", {
 -- ============ TRACER ESP SECTION ============
 local TracerBox = Tabs.Visuals:AddGroupbox({
     Name = "Tracer ESP",
-    Side = "Right",
+    Side = "Left",
 })
 
 TracerBox:AddToggle("TracerESP", {
@@ -529,6 +529,15 @@ TracerBox:AddSlider("TracerThickness", {
     Rounding = 1,
     Callback = function(Value)
         getgenv().SilentAimSettings.TracerThickness = Value
+    end,
+})
+
+TracerBox:AddToggle("TracerTargetOnly", {
+    Text = "Target Only",
+    Tooltip = "Só mostra o tracer no player que é seu target atual",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.TracerTargetOnly = v
     end,
 })
 
