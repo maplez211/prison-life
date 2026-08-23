@@ -402,7 +402,7 @@ FOVBox:AddSlider("FOVSize", {
     end,
 })
 
-FOVBox:AddColorPicker("FOVColor", {
+FOVBox:AddLabel("FOV Color"):AddColorPicker("FOVColor", {
     Default = Color3.fromRGB(255, 255, 255),
     Title = "FOV Color",
     Text = "FOV Color",
@@ -435,7 +435,7 @@ VisualsLeftBox:AddToggle("ESP", {
     end,
 })
 
-VisualsLeftBox:AddColorPicker("ESPTargetColor", {
+VisualsLeftBox:AddLabel("Target Highlight Color"):AddColorPicker("ESPTargetColor", {
     Default = Color3.fromRGB(255, 182, 255),
     Title = "ESP Target Color",
     Text = "Target Highlight Color",
@@ -485,7 +485,7 @@ CustomBox:AddToggle("ToggleRain", {
     end,
 })
 
-CustomBox:AddColorPicker("FogColor", {
+CustomBox:AddLabel("Fog Color"):AddColorPicker("FogColor", {
     Default = Color3.fromRGB(100, 100, 100),
     Title = "Fog Color",
     Text = "Fog Color",
@@ -520,7 +520,7 @@ TracerBox:AddToggle("TracerESP", {
     end,
 })
 
-TracerBox:AddColorPicker("TracerColor", {
+TracerBox:AddLabel("Tracer Color"):AddColorPicker("TracerColor", {
     Default = Color3.fromRGB(255, 182, 255),
     Title = "Tracer Color",
     Text = "Tracer Color",
