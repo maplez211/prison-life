@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.2.6 | by 2knw",
+    Footer = "Version 0.2.7 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -286,6 +286,18 @@ local AimbotMidBox = Tabs.Aimbot:AddGroupbox({
     Side = "Left",
 })
 
+AimbotMidBox:AddSlider("SilentAimRange", {
+    Text = "Silent Aim Range",
+    Tooltip = "Color of the highlight when a player is your target",
+    Default = 500,
+    Min = 30,
+    Max = 1000,
+    Rounding = 0,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.SilentAimRange = Value
+    end,
+})
+
 AimbotMidBox:AddSlider("Smoothing", {
     Text = "Smoothing",
     Default = 50,
@@ -439,7 +451,7 @@ VisualsLeftBox:AddLabel("Target Highlight Color"):AddColorPicker("ESPTargetColor
     Default = Color3.fromRGB(255, 182, 255),
     Title = "ESP Target Color",
     Text = "Target Highlight Color",
-    Tooltip = "Cor do highlight quando um player é seu target",
+    Tooltip = "Color of the highlight when a player is your target",
     Callback = function(Value)
         setESPTargetColorRGB(Value)
     end,
@@ -522,7 +534,7 @@ TracerBox:AddToggle("TracerESP", {
 
 TracerBox:AddSlider("TracerThickness", {
     Text = "Tracer Thickness",
-    Tooltip = "Espessura da linha do tracer",
+    Tooltip = "Thickness of the tracer line",
     Default = 0.2,
     Min = 0.1,
     Max = 1.5,
@@ -534,7 +546,7 @@ TracerBox:AddSlider("TracerThickness", {
 
 TracerBox:AddToggle("TracerTargetOnly", {
     Text = "Target Only",
-    Tooltip = "Só mostra o tracer no player que é seu target atual",
+    Tooltip = "Only shows the tracer on the player who is your current target",
     Default = false,
     Callback = function(v)
         getgenv().SilentAimSettings.TracerTargetOnly = v
@@ -545,7 +557,7 @@ TracerBox:AddLabel("Target Tracer Color"):AddColorPicker("TracerColor", {
     Default = Color3.fromRGB(255, 182, 255),
     Title = "Target Tracer Color",
     Text = "Target Tracer Color",
-    Tooltip = "Cor do tracer apenas do seu target atual (os demais players usam a cor do time deles)",
+    Tooltip = "Color of the tracer for your current target only (other players use their team color)",
     Callback = function(Value)
         setTracerColorRGB(Value)
     end,
