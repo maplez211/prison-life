@@ -14,13 +14,14 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.2.1 | by 2knw",
+    Footer = "Version 0.2.2 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
     Size = UDim2.fromOffset(550, 500), 
     Center = true,
     Resizable = true, 
+    SidebarCompacted = true, 
 })
 
 -- ============ TABS ============
