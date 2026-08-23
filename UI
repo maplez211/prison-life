@@ -29,7 +29,6 @@ local Window = Library:CreateWindow({
 -- ============ TABS ============
 local Tabs = {
     Aimbot = Window:AddTab("Combat", "crosshair"),
-    Players = Window:AddTab("Player", "user"),
     Visuals = Window:AddTab("Visuals", "eye"),
     Teleports = Window:AddTab("Weapons & Shop", "shopping-basket"),
     ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
@@ -116,8 +115,8 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
     end,
 })
 
-local PlayersLeftBox = Tabs.Players:AddGroupbox({
-    Name = "Teleport",
+local PlayersBox = Tabs.Teleports:AddGroupbox({
+    Name = "Players",
     Side = "Left",
 })
 
@@ -129,7 +128,7 @@ for _, plr in ipairs(Players:GetPlayers()) do
     end
 end
 
-PlayersLeftBox:AddDropdown("TeleportPlayer", {
+PlayersBox:AddDropdown("TeleportPlayer", {
     Values = playerOptions,
     Default = 1,
     Text = "Teleport to Player",
@@ -149,7 +148,7 @@ PlayersLeftBox:AddDropdown("TeleportPlayer", {
     end,
 })
 
-PlayersLeftBox:AddButton({
+PlayersBox:AddButton({
     Text = "Update Players List",
     Func = function()
         local options = {"Select a player..."}
@@ -163,10 +162,6 @@ PlayersLeftBox:AddButton({
 })
 
 -- ============ VIEW PLAYER SECTION ============
-local PlayersRightBox = Tabs.Players:AddGroupbox({
-    Name = "View Player",
-    Side = "Right",
-})
 
 local viewPlayerOptions = {"Select a player..."}
 for _, plr in ipairs(Players:GetPlayers()) do
@@ -214,7 +209,7 @@ local function startSpectate(targetName)
     end)
 end
 
-PlayersRightBox:AddDropdown("ViewPlayer", {
+PlayersBox:AddDropdown("ViewPlayer", {
     Values = viewPlayerOptions,
     Default = 1,
     Text = "View Player",
@@ -230,7 +225,7 @@ PlayersRightBox:AddDropdown("ViewPlayer", {
     end,
 })
 
-PlayersRightBox:AddButton({
+PlayersBox:AddButton({
     Text = "Update Players List",
     Func = function()
         local options = {"Select a player..."}
