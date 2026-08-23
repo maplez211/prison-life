@@ -38,6 +38,7 @@ getgenv().SilentAimSettings = {
     TracerColor = Color3.fromRGB(255, 182, 255),
     TracerThickness = 0.2,
     TracerESPEnabled = false,
+    TracerTargetOnly = false,
     TargetOnPlayer = {},
     IgnoreTargets = {}
 }
@@ -74,7 +75,7 @@ function toggleFOVCircle(hide)
 end
 
 -- ============ TRACER BEAM SYSTEM (um beam por player) ============
-local tracerBeams = {} -- [player] = { Beam = , Start = , End = }
+local tracerBeams = {}
 
 local function removeTracerBeam(plr)
     local data = tracerBeams[plr]
@@ -92,9 +93,6 @@ local function removeAllTracerBeams()
     end
 end
 
--- Retorna a cor do tracer para um player específico:
--- se ele for o target atual, usa a cor customizada (Settings.TracerColor)
--- senão, usa a cor do time dele
 local function getPlayerTracerColor(plr)
     if currentTarget and currentTarget.Parent and plr.Character and currentTarget.Parent == plr.Character then
         return Settings.TracerColor
@@ -155,9 +153,40 @@ local function updateTracerBeam(plr)
     data.Beam.Enabled = true
 end
 
+local function getCurrentTargetPlayer()
+    if Settings.Enabled and currentTarget and currentTarget.Parent then
+        local targetChar = currentTarget.Parent
+        if targetChar:IsA("Model") then
+            return Players:GetPlayerFromCharacter(targetChar)
+        end
+    end
+    return nil
+end
+
 local function updateAllTracerBeams()
     if not Settings.ESPEnabled or not Settings.TracerESPEnabled then
         removeAllTracerBeams()
+        return
+    end
+
+    if Settings.TracerTargetOnly then
+        local targetPlayer = getCurrentTargetPlayer()
+
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                if plr == targetPlayer then
+                    local char = plr.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if char and hum and hum.Health > 0 then
+                        updateTracerBeam(plr)
+                    else
+                        removeTracerBeam(plr)
+                    end
+                else
+                    removeTracerBeam(plr)
+                end
+            end
+        end
         return
     end
 
@@ -610,13 +639,7 @@ local function updateESPSync()
     
     resetAllHighlights()
     
-    local targetPlayer = nil
-    if Settings.Enabled and currentTarget and currentTarget.Parent then
-        local targetChar = currentTarget.Parent
-        if targetChar:IsA("Model") then
-            targetPlayer = Players:GetPlayerFromCharacter(targetChar)
-        end
-    end
+    local targetPlayer = getCurrentTargetPlayer()
     
     if targetPlayer and targetPlayer.Character then
         highlightTarget(targetPlayer)
@@ -819,8 +842,6 @@ end
 
 function setTracerColorRGB(color)
     Settings.TracerColor = color
-    -- as cores dos beams são recalculadas automaticamente a cada frame
-    -- em updateAllTracerBeams(), então não precisa forçar update aqui
 end
 
 function setESPTargetColorRGB(color)
