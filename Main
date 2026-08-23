@@ -30,9 +30,7 @@ getgenv().SilentAimSettings = {
     ESPEnabled = false,
     ESPNamesEnabled = true,
     ESPTargetColor = Color3.fromRGB(255, 182, 255),
-    IgnoreInmates = false,
-    IgnoreGuards = false,
-    IgnoreCriminals = false,
+    TargetTeams = { Inmates = true, Guards = true, Criminals = true },
     HostileCheck = false,
     TrespassCheck = false,
     TracerColor = Color3.fromRGB(255, 182, 255),
@@ -245,9 +243,9 @@ local function isValidTarget(plr)
         if player.Team and plr.Team == player.Team then return false end
     end
     
-    if Settings.IgnoreInmates and plr.Team and plr.Team.Name == "Inmates" then return false end
-    if Settings.IgnoreGuards and plr.Team and plr.Team.Name == "Guards" then return false end
-    if Settings.IgnoreCriminals and plr.Team and plr.Team.Name == "Criminals" then return false end
+    if plr.Team and Settings.TargetTeams and not Settings.TargetTeams[plr.Team.Name] then
+        return false
+    end
     
     if Settings.SilentAimRange then
         local localRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
