@@ -19,7 +19,7 @@ getgenv().SilentAimSettings = {
     Method = "Raycast",
     VisibleCheck = true,
     TeamCheck = true,
-    Smoothing = 0.5,
+    Smoothing = 0,
     HitChance = 100,
     FOVEnabled = true,
     FOVRadius = 100,
@@ -47,6 +47,7 @@ getgenv().SilentAimSettings = {
 local Settings = getgenv().SilentAimSettings
 local currentSkybox = nil
 local smoothedTargetPosition = nil
+local redirectStrength = 0
 local currentTarget = nil
 local lastTargetPlayer = nil
 
@@ -440,6 +441,32 @@ local function getSpreadDirection(Origin, OriginalDirection, HitPart)
     return NewDirection.Unit * FinalDistance
 end
 
+local function getFadeDirection(Origin, OriginalDirection, TargetPosition, Strength)
+    local OriginalDistance = OriginalDirection.Magnitude
+    if OriginalDistance == 0 then OriginalDistance = 1000 end
+
+    local NaturalEndpoint = Origin + OriginalDirection
+    local BlendedEndpoint = NaturalEndpoint:Lerp(TargetPosition, Strength)
+
+    local NewDirection = BlendedEndpoint - Origin
+    local NewDistance = NewDirection.Magnitude
+    if NewDistance == 0 then
+        return OriginalDirection
+    end
+
+    local FinalDistance = math.max(OriginalDistance, NewDistance)
+    return NewDirection.Unit * FinalDistance
+end
+
+local function getRedirectedDirection(Origin, OriginalDirection)
+    if currentTarget and currentTarget.Parent then
+        return getSpreadDirection(Origin, OriginalDirection, currentTarget)
+    elseif smoothedTargetPosition and redirectStrength > 0.01 then
+        return getFadeDirection(Origin, OriginalDirection, smoothedTargetPosition, redirectStrength)
+    end
+    return nil
+end
+
 local function isLocalPlayerShooting(Arguments, Method, Origin, OriginalDirection)
     local LocalChar = player.Character
     if not LocalChar then return false end
@@ -499,9 +526,9 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                 local Origin = A_Ray.Origin
                 
                 if isLocalPlayerShooting(Arguments, Method, Origin, A_Ray.Direction) then
-                    local HitPart = currentTarget
-                    if HitPart and HitPart.Parent then
-                        Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
+                    local NewDir = getRedirectedDirection(Origin, A_Ray.Direction)
+                    if NewDir then
+                        Arguments[2] = Ray.new(Origin, NewDir)
                         return oldNamecall(unpack(Arguments))
                     end
                 end
@@ -512,9 +539,9 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                 local Origin = A_Ray.Origin
                 
                 if isLocalPlayerShooting(Arguments, Method, Origin, A_Ray.Direction) then
-                    local HitPart = currentTarget
-                    if HitPart and HitPart.Parent then
-                        Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
+                    local NewDir = getRedirectedDirection(Origin, A_Ray.Direction)
+                    if NewDir then
+                        Arguments[2] = Ray.new(Origin, NewDir)
                         return oldNamecall(unpack(Arguments))
                     end
                 end
@@ -525,492 +552,8 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
                 local Origin = A_Ray.Origin
                 
                 if isLocalPlayerShooting(Arguments, Method, Origin, A_Ray.Direction) then
-                    local HitPart = currentTarget
-                    if HitPart and HitPart.Parent then
-                        Arguments[2] = Ray.new(Origin, getSpreadDirection(Origin, A_Ray.Direction, HitPart))
+                    local NewDir = getRedirectedDirection(Origin, A_Ray.Direction)
+                    if NewDir then
+                        Arguments[2] = Ray.new(Origin, NewDir)
                         return oldNamecall(unpack(Arguments))
-                    end
-                end
-            end
-        elseif Method == "Raycast" and Settings.Method == Method then
-            if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
-                local A_Origin = Arguments[2]
-                local OriginalDirection = Arguments[3]
-                
-                if isLocalPlayerShooting(Arguments, Method, A_Origin, OriginalDirection) then
-                    local HitPart = currentTarget
-                    if HitPart and HitPart.Parent then
-                        Arguments[3] = getSpreadDirection(A_Origin, OriginalDirection, HitPart)
-                        return oldNamecall(unpack(Arguments))
-                    end
-                end
-            end
-        end
-    end
-    return oldNamecall(...)
-end))
-
--- ============ MAIN LOOP ============
-task.spawn(function()
-    while task.wait(0.1) do
-        if Settings.Enabled then
-            currentTarget = getClosestTarget()
-        else
-            currentTarget = nil
-        end
-    end
-end)
-
-local MaxSmoothTime = 1.5
-
-RunService.RenderStepped:Connect(function(deltaTime)
-    if workspace.CurrentCamera and Settings.CameraFOV then
-        workspace.CurrentCamera.FieldOfView = Settings.CameraFOV
-    end
-
-    updateFOVPosition()
-    
-    if fovCircle then
-        fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled
-        fovCircle.Size = UDim2.new(0, Settings.FOVRadius * 2, 0, Settings.FOVRadius * 2)
-        if fovCircle:FindFirstChild("UIStroke") then
-            fovCircle.UIStroke.Thickness = Settings.FOVThickness
-        end
-    end
-    
-    if Settings.Enabled and currentTarget and currentTarget.Parent then
-        if not smoothedTargetPosition then
-            smoothedTargetPosition = currentTarget.Position
-        else
-            local tau = Settings.Smoothing * MaxSmoothTime
-            local alpha = 1
-            if tau > 0.0001 then
-                alpha = 1 - math.exp(-deltaTime / tau)
-            end
-            smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, alpha)
-        end
-    else
-        smoothedTargetPosition = nil
-    end
-    
-    updateAllTracerBeams()
-end)
-
-local function resetAllHighlights()
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player and plr.Character then
-            local highlight = plr.Character:FindFirstChild("ESPHighlight")
-            if highlight and highlight:IsA("Highlight") then
-                local teamColor = Color3.fromRGB(255, 0, 0)
-                if plr.TeamColor then teamColor = plr.TeamColor.Color
-                elseif plr.Team and plr.Team.TeamColor then teamColor = plr.Team.TeamColor.Color end
-                
-                highlight.FillColor = teamColor
-                highlight.OutlineColor = teamColor
-                highlight.FillTransparency = 0.85
-                highlight.OutlineTransparency = 0
-            end
-            
-            local head = plr.Character:FindFirstChild("Head")
-            if head then
-                local billboard = head:FindFirstChild("ESPNameTag")
-                if billboard then
-                    local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
-                    if label then
-                        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                    end
-                end
-            end
-        end
-    end
-end
-
-local function highlightTarget(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character then return end
-    
-    local targetColor = Settings.ESPTargetColor or Color3.fromRGB(255, 182, 255)
-    
-    local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
-    if highlight and highlight:IsA("Highlight") then
-        highlight.FillColor = targetColor
-        highlight.OutlineColor = targetColor
-        highlight.FillTransparency = 0.65
-        highlight.OutlineTransparency = 0
-    end
-    
-    local head = targetPlayer.Character:FindFirstChild("Head")
-    if head then
-        local billboard = head:FindFirstChild("ESPNameTag")
-        if billboard then
-            local label = billboard:FindFirstChild("NameLabel") or billboard:FindFirstChildOfClass("TextLabel")
-            if label then
-                label.TextColor3 = targetColor
-                label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-            end
-        end
-    end
-end
-
-local function updateESPSync()
-    if not Settings.ESPEnabled then
-        return
-    end
-    
-    resetAllHighlights()
-    
-    local targetPlayer = getCurrentTargetPlayer()
-    
-    if targetPlayer and targetPlayer.Character then
-        highlightTarget(targetPlayer)
-    end
-    
-    lastTargetPlayer = targetPlayer
-end
-
-RunService.RenderStepped:Connect(function()
-    if Settings.ESPEnabled then
-        updateESPSync()
-    end
-end)
-
--- ============ ESP AUTO REFRESH ============
-task.spawn(function()
-    while task.wait(0.5) do
-        if Settings.ESPEnabled then
-            for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= player and plr.Character then
-                    local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-                    if hum and hum.Health > 0 then
-                        applyESP(plr)
-                    else
-                        removeESP(plr)
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- ============ SPINBOT ============
-RunService.RenderStepped:Connect(function()
-    if Settings.SpinbotSpeed > 0 then
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(Settings.SpinbotSpeed), 0)
-        end
-    end
-end)
-
--- ============ AUTOSHOOT ============
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local shootRemote = nil
-pcall(function()
-    local gunRemotes = ReplicatedStorage:WaitForChild("GunRemotes", 5)
-    if gunRemotes then
-        shootRemote = gunRemotes:WaitForChild("ShootEvent", 5)
-    end
-end)
-
-local function getEquippedWeapon()
-    local char = player.Character
-    if not char then return nil end
-    for _, child in ipairs(char:GetChildren()) do
-        if child:IsA("Tool") then
-            return child
-        end
-    end
-    return nil
-end
-
-local lastAutoShot = 0
-local AutoShotDelay = 0.15
-
-RunService.Heartbeat:Connect(function()
-    if not shootRemote then return end
-    if not Settings.Enabled or not Settings.Autoshoot then return end
-    if not currentTarget or not currentTarget.Parent then return end
-
-    local weapon = getEquippedWeapon()
-    if not weapon then return end
-
-    if (tick() - lastAutoShot) < AutoShotDelay then return end
-    lastAutoShot = tick()
-
-    local char = player.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    local muzzlePos = hrp and hrp.Position or camera.CFrame.Position
-
-    local origin = vector.create(muzzlePos.X, muzzlePos.Y, muzzlePos.Z)
-    local targetPos = vector.create(currentTarget.Position.X, currentTarget.Position.Y, currentTarget.Position.Z)
-
-    shootRemote:FireServer({ origin, targetPos, currentTarget })
-end)
-
--- ============ KEYBINDS ============
-UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then return end
-    if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
-        Settings.Enabled = not Settings.Enabled
-        if fovCircle then fovCircle.Visible = Settings.Enabled and Settings.FOVEnabled end
-        if not Settings.Enabled then
-            currentTarget = nil
-            smoothedTargetPosition = nil
-        end
-    end
-end)
-
-player.CharacterAdded:Connect(function()
-    camera.CameraType = Enum.CameraType.Custom
-    if Settings.ESPEnabled then
-        task.wait(0.5)
-        updateESP()
-    end
-end)
-
--- ============ SKYBOXES ============
-local skyboxes = {
-    ["Gray Skybox"] = { SkyboxBk = "rbxassetid://154987705", SkyboxDn = "rbxassetid://154987705", SkyboxFt = "rbxassetid://154987705", SkyboxLf = "rbxassetid://154987705", SkyboxRt = "rbxassetid://154987705", SkyboxUp = "rbxassetid://154987705" },
-    ["2knw & Donk666 Skybox"] = { SkyboxBk = "rbxassetid://121222457209872", SkyboxDn = "rbxassetid://121222457209872", SkyboxFt = "rbxassetid://121222457209872", SkyboxLf = "rbxassetid://121222457209872", SkyboxRt = "rbxassetid://121222457209872", SkyboxUp = "rbxassetid://121222457209872" },
-    ["Snow Skybox"] = { SkyboxBk = "rbxassetid://155657655", SkyboxDn = "rbxassetid://155674246", SkyboxFt = "rbxassetid://155657609", SkyboxLf = "rbxassetid://155657671", SkyboxRt = "rbxassetid://155657619", SkyboxUp = "rbxassetid://155674931" },
-    ["Cartoon Skybox"] = { SkyboxBk = "rbxassetid://15114954171", SkyboxDn = "rbxassetid://15114958869", SkyboxFt = "rbxassetid://15114963740", SkyboxLf = "rbxassetid://15114957947", SkyboxRt = "rbxassetid://15114955238", SkyboxUp = "rbxassetid://15114948718" },
-    ["Lince Skybox"] = { SkyboxBk = "rbxassetid://102112718813044", SkyboxDn = "rbxassetid://102112718813044", SkyboxFt = "rbxassetid://102112718813044", SkyboxLf = "rbxassetid://102112718813044", SkyboxRt = "rbxassetid://102112718813044", SkyboxUp = "rbxassetid://102112718813044" },
-    ["Red Skybox"] = { SkyboxBk = "rbxassetid://401664839", SkyboxDn = "rbxassetid://401664862", SkyboxFt = "rbxassetid://401664960", SkyboxLf = "rbxassetid://401664881", SkyboxRt = "rbxassetid://401664901", SkyboxUp = "rbxassetid://401664936" },
-    ["Slam Skybox"] = { SkyboxBk = "rbxassetid://111576755001670", SkyboxDn = "rbxassetid://111576755001670", SkyboxFt = "rbxassetid://111576755001670", SkyboxLf = "rbxassetid://111576755001670", SkyboxRt = "rbxassetid://111576755001670", SkyboxUp = "rbxassetid://111576755001670" },
-    ["Green Eyeball Skybox"] = { SkyboxBk = "rbxassetid://113857258921684", SkyboxDn = "rbxassetid://131099902234134", SkyboxFt = "rbxassetid://98342317659302", SkyboxLf = "rbxassetid://130914716725043", SkyboxRt = "rbxassetid://93970360759256", SkyboxUp = "rbxassetid://135000456639127" },
-    ["Morioh Skybox"] = { SkyboxBk = "rbxassetid://414118015", SkyboxDn = "rbxassetid://414117901", SkyboxFt = "rbxassetid://414117817", SkyboxLf = "rbxassetid://414118150", SkyboxRt = "rbxassetid://414118255", SkyboxUp = "rbxassetid://414118438" },
-    ["Rainy Skybox"] = { SkyboxBk = "rbxassetid://4498828382", SkyboxDn = "rbxassetid://4498828812", SkyboxFt = "rbxassetid://4498829917", SkyboxLf = "rbxassetid://4498830911", SkyboxRt = "rbxassetid://4498830417", SkyboxUp = "rbxassetid://4498831746" }
-}
-
-function setSkybox(name)
-    if currentSkybox then
-        pcall(function()
-            if Lighting:FindFirstChild(currentSkybox) then
-                Lighting[currentSkybox]:Destroy()
-            end
-        end)
-        currentSkybox = nil
-    end
-    if name == "None" then return end
-    local data = skyboxes[name]
-    if not data then return end
-    local sky = Instance.new("Sky", Lighting)
-    sky.Name = name
-    for prop, value in pairs(data) do sky[prop] = value end
-    currentSkybox = name
-end
-
--- ============ ESP ============
-function applyESP(plr)
-    if plr == player then return end
-    local char = plr.Character
-    if not char then return end
-    
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    if not humanoid or humanoid.Health <= 0 then return end
-    
-    local teamColor = Color3.fromRGB(255, 0, 0)
-    if plr.TeamColor then teamColor = plr.TeamColor.Color
-    elseif plr.Team and plr.Team.TeamColor then teamColor = plr.Team.TeamColor.Color end
-    
-    local highlight = char:FindFirstChild("ESPHighlight")
-    if not highlight then
-        highlight = Instance.new("Highlight", char)
-        highlight.Name = "ESPHighlight"
-    end
-    highlight.FillColor = teamColor
-    highlight.FillTransparency = 0.85
-    highlight.OutlineColor = teamColor
-    highlight.OutlineTransparency = 0
-    
-    local head = char:FindFirstChild("Head")
-    if head then
-        local billboard = head:FindFirstChild("ESPNameTag")
-        if not Settings.ESPNamesEnabled then
-            if billboard then billboard:Destroy() end
-        elseif not billboard then
-            billboard = Instance.new("BillboardGui", head)
-            billboard.Name = "ESPNameTag"
-            billboard.Size = UDim2.new(0, 200, 0, 30)
-            billboard.StudsOffset = Vector3.new(0, 1.5, 0)
-            billboard.AlwaysOnTop = true
-            local label = Instance.new("TextLabel", billboard)
-            label.Name = "NameLabel"
-            label.BackgroundTransparency = 1
-            label.Size = UDim2.new(1, 0, 1, 0)
-            label.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"
-            label.TextColor3 = Color3.fromRGB(255, 255, 255)
-            label.Font = Enum.Font.GothamBold
-            label.TextSize = 12
-            label.TextStrokeTransparency = 0
-            label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-        end
-    end
-end
-
-function removeESP(plr)
-    if plr.Character then
-        local highlight = plr.Character:FindFirstChild("ESPHighlight")
-        if highlight then highlight:Destroy() end
-        local head = plr.Character:FindFirstChild("Head")
-        if head then
-            local billboard = head:FindFirstChild("ESPNameTag")
-            if billboard then billboard:Destroy() end
-        end
-    end
-end
-
-function updateESP()
-    if not Settings.ESPEnabled then
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then removeESP(plr) end
-        end
-        return
-    end
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player then applyESP(plr) end
-    end
-end
-
-Players.PlayerAdded:Connect(function(plr)
-    plr.CharacterAdded:Connect(function()
-        if Settings.ESPEnabled then
-            task.wait(0.5)
-            applyESP(plr)
-        end
-    end)
-end)
-
-Players.PlayerRemoving:Connect(function(plr)
-    removeESP(plr)
-    removeTracerBeam(plr)
-end)
-
--- ============ FOV COLOR SYSTEM ============
-local fovRainbowConnection = nil
-
-function setFOVColorRGB(color)
-    if fovRainbowConnection then
-        fovRainbowConnection:Disconnect()
-        fovRainbowConnection = nil
-    end
-    Settings.FOVColor = color
-    if fovCircle and fovCircle:FindFirstChild("UIStroke") then
-        fovCircle.UIStroke.Color = color
-    end
-end
-
-function setFogColorRGB(color)
-    Lighting.FogColor = color
-end
-
-function setTracerColorRGB(color)
-    Settings.TracerColor = color
-end
-
-function setESPTargetColorRGB(color)
-    Settings.ESPTargetColor = color
-end
-
--- ============ RAIN SYSTEM ============
-local rainActive = false
-local rainSound = nil
-local rainParts = {}
-local rainLoopConnection = nil
-
-local function stopRain()
-    rainActive = false
-    
-    if rainLoopConnection then
-        rainLoopConnection:Disconnect()
-        rainLoopConnection = nil
-    end
-    
-    if rainSound then
-        rainSound:Stop()
-        rainSound:Destroy()
-        rainSound = nil
-    end
-    
-    for _, part in ipairs(rainParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
-    end
-    rainParts = {}
-end
-
-local function startRain()
-    stopRain()
-    rainActive = true
-    
-    rainSound = Instance.new("Sound")
-    rainSound.SoundId = "rbxassetid://1516791621"
-    rainSound.Name = "RainSound"
-    rainSound.Parent = workspace
-    rainSound.Looped = true
-    rainSound:Play()
-    
-    local rainPerLoop = 5
-    local rainArea = Vector3.new(100, 100, 100)
-    local rainTransparency = 0.5
-    local rainColor = Color3.fromRGB(194, 255, 246)
-    local loopCounter = 0
-    
-    rainLoopConnection = task.spawn(function()
-        while rainActive do
-            loopCounter = loopCounter + 1
-            
-            for i = 1, rainPerLoop do
-                if not rainActive then break end
-                
-                local sizeX = math.random(2524, 3000) / 1000
-                local sizeY = math.random(30, 40) / 100
-                local sizeZ = math.random(157, 200) / 1000
-                
-                local rainPart = Instance.new("Part")
-                rainPart.Name = "RainDrop"
-                rainPart.Shape = Enum.PartType.Cylinder
-                rainPart.Size = Vector3.new(sizeX, sizeY, sizeZ)
-                rainPart.Position = camera.CFrame.Position + Vector3.new(math.random(-100, 100), 100, math.random(-100, 100))
-                rainPart.Orientation = Vector3.new(math.random(0, 5), 90, math.random(85, 95))
-                rainPart.Transparency = rainTransparency
-                rainPart.CanCollide = false
-                rainPart.Color = rainColor
-                rainPart.Anchored = false
-                rainPart.Material = Enum.Material.SmoothPlastic
-                rainPart.Parent = workspace
-                
-                table.insert(rainParts, rainPart)
-                
-                local function cleanupRainPart(part)
-                    task.wait(2)
-                    if part and part.Parent then
-                        part:Destroy()
-                    end
-                    for idx, p in ipairs(rainParts) do
-                        if p == part then
-                            table.remove(rainParts, idx)
-                            break
-                        end
-                    end
-                end
-                
-                task.spawn(cleanupRainPart, rainPart)
-            end
-            
-            task.wait()
-        end
-    end)
-end
-
-function toggleRain(enabled)
-    if enabled then
-        startRain()
-    else
-        stopRain()
-    end
-end
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
+      
