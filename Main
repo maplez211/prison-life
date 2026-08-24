@@ -561,7 +561,9 @@ task.spawn(function()
     end
 end)
 
-RunService.RenderStepped:Connect(function()
+local MaxSmoothTime = 1.5
+
+RunService.RenderStepped:Connect(function(deltaTime)
     if workspace.CurrentCamera and Settings.CameraFOV then
         workspace.CurrentCamera.FieldOfView = Settings.CameraFOV
     end
@@ -580,7 +582,12 @@ RunService.RenderStepped:Connect(function()
         if not smoothedTargetPosition then
             smoothedTargetPosition = currentTarget.Position
         else
-            smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, Settings.Smoothing)
+            local tau = Settings.Smoothing * MaxSmoothTime
+            local alpha = 1
+            if tau > 0.0001 then
+                alpha = 1 - math.exp(-deltaTime / tau)
+            end
+            smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, alpha)
         end
     else
         smoothedTargetPosition = nil
