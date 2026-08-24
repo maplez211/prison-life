@@ -47,7 +47,6 @@ getgenv().SilentAimSettings = {
 local Settings = getgenv().SilentAimSettings
 local currentSkybox = nil
 local smoothedTargetPosition = nil
-local redirectStrength = 0
 local currentTarget = nil
 local lastTargetPlayer = nil
 
@@ -441,28 +440,9 @@ local function getSpreadDirection(Origin, OriginalDirection, HitPart)
     return NewDirection.Unit * FinalDistance
 end
 
-local function getFadeDirection(Origin, OriginalDirection, TargetPosition, Strength)
-    local OriginalDistance = OriginalDirection.Magnitude
-    if OriginalDistance == 0 then OriginalDistance = 1000 end
-
-    local NaturalEndpoint = Origin + OriginalDirection
-    local BlendedEndpoint = NaturalEndpoint:Lerp(TargetPosition, Strength)
-
-    local NewDirection = BlendedEndpoint - Origin
-    local NewDistance = NewDirection.Magnitude
-    if NewDistance == 0 then
-        return OriginalDirection
-    end
-
-    local FinalDistance = math.max(OriginalDistance, NewDistance)
-    return NewDirection.Unit * FinalDistance
-end
-
 local function getRedirectedDirection(Origin, OriginalDirection)
     if currentTarget and currentTarget.Parent then
         return getSpreadDirection(Origin, OriginalDirection, currentTarget)
-    elseif smoothedTargetPosition and redirectStrength > 0.01 then
-        return getFadeDirection(Origin, OriginalDirection, smoothedTargetPosition, redirectStrength)
     end
     return nil
 end
@@ -616,21 +596,8 @@ RunService.RenderStepped:Connect(function(deltaTime)
             end
             smoothedTargetPosition = smoothedTargetPosition:Lerp(currentTarget.Position, alpha)
         end
-        redirectStrength = 1
     else
-        if smoothedTargetPosition then
-            local tau = Settings.Smoothing * MaxSmoothTime
-            if tau > 0.0001 then
-                redirectStrength = redirectStrength * math.exp(-deltaTime / tau)
-                if redirectStrength <= 0.01 then
-                    redirectStrength = 0
-                    smoothedTargetPosition = nil
-                end
-            else
-                redirectStrength = 0
-                smoothedTargetPosition = nil
-            end
-        end
+        smoothedTargetPosition = nil
     end
     
     updateAllTracerBeams()
@@ -797,7 +764,6 @@ UserInputService.InputBegan:Connect(function(input, processed)
         if not Settings.Enabled then
             currentTarget = nil
             smoothedTargetPosition = nil
-            redirectStrength = 0
         end
     end
 end)
