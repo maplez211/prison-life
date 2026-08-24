@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.4 | by 2knw",
+    Footer = "Version 0.3.6 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -341,12 +341,12 @@ AimbotMidBox:AddSlider("SilentAimRange", {
 
 AimbotMidBox:AddSlider("Smoothing", {
     Text = "Smoothing",
-    Default = 50,
+    Default = 0,
     Min = 0,
-    Max = 100,
+    Max = 1,
     Rounding = 1,
     Callback = function(Value)
-        getgenv().SilentAimSettings.Smoothing = Value / 100
+        getgenv().SilentAimSettings.Smoothing = Value
     end,
 })
 
