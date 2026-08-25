@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.6 | by 2knw",
+    Footer = "Version 0.3.7 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -28,10 +28,10 @@ local Window = Library:CreateWindow({
 
 -- ============ TABS ============
 local Tabs = {
-    Aimbot = Window:AddTab("Combat", "crosshair"),
-    Visuals = Window:AddTab("Visuals", "eye"),
-    Teleports = Window:AddTab("Weapons & Shop", "shopping-basket"),
-    ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
+    Aimbot = Window:AddTab("Combat", "crosshair", "Aim settings, targeting and FOV configuration"),
+    Visuals = Window:AddTab("Visuals", "eye", "ESP, tracers and visual customization"),
+    Teleports = Window:AddTab("Weapons & Shop", "shopping-basket", "Teleports and Weapons"),
+    ["UI Settings"] = Window:AddTab("UI Settings", "settings", "Customize the UI behavior and appearance"),
 }
 
 Library:SetDPIScale(90)
