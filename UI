@@ -1,3 +1,4 @@
+
 -- UI Script Precision | Prison Life - Obsidian Library Version
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
@@ -14,7 +15,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.7 | by 2knw",
+    Footer = "Version 0.3.8 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -453,7 +454,7 @@ FOVBox:AddSlider("FOVSize", {
     Default = 100,
     Min = 30,
     Max = 500,
-    Rounding = 10,
+    Rounding = 0,
     Callback = function(Value)
         getgenv().SilentAimSettings.FOVRadius = Value
     end,
@@ -476,6 +477,42 @@ FOVBox:AddToggle("HideFOV", {
         toggleFOVCircle(v)
     end,
 })
+
+-- ============ WEAPON MODIFICATIONS (TABBOX) ============
+local WeaponModsBox = Tabs.Aimbot:AddGroupbox({
+    Name = "Weapon Modifications",
+    Side = "Right",
+})
+
+local WeaponModsTabbox = WeaponModsBox:AddTabbox()
+
+-- Tab 1: Wrench icon (default) - Gun Mod settings
+local GunModTab = WeaponModsTabbox:AddTab("wrench")
+
+GunModTab:AddToggle("EnableGunMod", {
+    Text = "Enable Gun Mod",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.GunModEnabled = v
+    end,
+})
+
+GunModTab:AddToggle("AutoFire", {
+    Text = "Auto Fire",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.AutoFire = v
+    end,
+})
+
+-- Tab 2: Link/chain icon - empty for now
+local ChainTab = WeaponModsTabbox:AddTab("link")
+
+-- Tab 3: Paintbrush icon - empty for now
+local PaintTab = WeaponModsTabbox:AddTab("paintbrush")
+
+-- Tab 4: Volume/sound icon - empty for now
+local SoundTab = WeaponModsTabbox:AddTab("volume-2")
 
 -- ============ VISUALS TAB ============
 local VisualsLeftBox = Tabs.Visuals:AddGroupbox({
