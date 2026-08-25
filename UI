@@ -1,4 +1,3 @@
-
 -- UI Script Precision | Prison Life - Obsidian Library Version
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
@@ -479,14 +478,9 @@ FOVBox:AddToggle("HideFOV", {
 })
 
 -- ============ WEAPON MODIFICATIONS (TABBOX) ============
-local WeaponModsBox = Tabs.Aimbot:AddGroupbox({
-    Name = "Weapon Modifications",
-    Side = "Right",
-})
+local WeaponModsTabbox = Tabs.Aimbot:AddRightTabbox("Weapon Modifications")
 
-local WeaponModsTabbox = WeaponModsBox:AddTabbox()
-
--- Tab 1: Wrench icon (default) - Gun Mod settings
+-- Tab 1: Gun Mod settings (default active)
 local GunModTab = WeaponModsTabbox:AddTab("wrench")
 
 GunModTab:AddToggle("EnableGunMod", {
@@ -505,13 +499,13 @@ GunModTab:AddToggle("AutoFire", {
     end,
 })
 
--- Tab 2: Link/chain icon - empty for now
+-- Tab 2: empty for now
 local ChainTab = WeaponModsTabbox:AddTab("link")
 
--- Tab 3: Paintbrush icon - empty for now
+-- Tab 3: empty for now
 local PaintTab = WeaponModsTabbox:AddTab("paintbrush")
 
--- Tab 4: Volume/sound icon - empty for now
+-- Tab 4: empty for now
 local SoundTab = WeaponModsTabbox:AddTab("volume-2")
 
 -- ============ VISUALS TAB ============
