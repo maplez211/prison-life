@@ -1,3 +1,4 @@
+
 -- Main Script Precision | Prison Life
 
 local Players = game:GetService("Players")
@@ -1081,7 +1082,7 @@ local function applySoundPackToAllTools()
     end
 end
 
-function getgenv().SetWeaponSoundPack(packName)
+getgenv().SetWeaponSoundPack = function(packName)
     if packName == "None" or not packName then
         CurrentSoundPack = nil
     else
