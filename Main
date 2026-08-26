@@ -1,4 +1,3 @@
-
 -- Main Script Precision | Prison Life
 
 local Players = game:GetService("Players")
@@ -1029,7 +1028,7 @@ local SoundPacks = {
         ["M9"] = { ShootSound = 134436500, ReloadSound = 138084889 },
         ["M700"] = { ShootSound = 135972260363158, ReloadSound = 145081845 },
         ["M4A1"] = { ShootSound = 282003150, ReloadSound = 142491708 },
-        ["FN FAL"] = { ShootSound = 467459324, ReloadSound = 142491708 },
+        ["FAL"] = { ShootSound = 467459324, ReloadSound = 142491708 },
         ["MP5"] = { ShootSound = 18512721424, ReloadSound = 142491708 },
         ["Revolver"] = { ShootSound = 120052619815455, ReloadSound = 2041035308 },
     },
