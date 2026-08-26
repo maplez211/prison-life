@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.3.9 | by 2knw",
+    Footer = "Version 0.4.0 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -499,14 +499,19 @@ GunModTab:AddToggle("AutoFire", {
     end,
 })
 
--- Tab 2: empty for now
 local ChainTab = WeaponModsTabbox:AddTab(nil, "link")
-
--- Tab 3: empty for now
 local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
-
--- Tab 4: empty for now
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
+
+SoundTab:AddDropdown("WeaponSoundPack", {
+    Values = {"None", "Old Sounds"},
+    Default = "None",
+    Text = "Sound Pack",
+    Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
+    Callback = function(Value)
+        getgenv().SetWeaponSoundPack(Value)
+    end,
+})
 
 -- ============ VISUALS TAB ============
 local VisualsLeftBox = Tabs.Visuals:AddGroupbox({
