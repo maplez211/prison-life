@@ -1020,4 +1020,95 @@ function toggleRain(enabled)
     end
 end
 
+-- ============ WEAPON SOUND PACKS ============
+local SoundPacks = {
+    ["Old Sounds"] = {
+        ["AK-47"] = { ShootSound = 153230498, ReloadSound = 142491708 },
+        ["Remington 870"] = { ShootSound = 138083993, ReloadSound = 145081845 },
+        ["M9"] = { ShootSound = 134436500, ReloadSound = 138084889 },
+        ["M700"] = { ShootSound = 135972260363158, ReloadSound = 145081845 },
+        ["M4A1"] = { ShootSound = 282003150, ReloadSound = 142491708 },
+        ["FN FAL"] = { ShootSound = 467459324, ReloadSound = 142491708 },
+        ["MP5"] = { ShootSound = 18512721424, ReloadSound = 142491708 },
+        ["Revolver"] = { ShootSound = 120052619815455, ReloadSound = 2041035308 },
+    },
+}
+
+local CurrentSoundPack = nil
+
+local function applySoundPackToTool(tool)
+    if not CurrentSoundPack then return end
+    if not tool or not tool:IsA("Tool") then return end
+
+    local packData = SoundPacks[CurrentSoundPack]
+    if not packData then return end
+
+    local weaponData = packData[tool.Name]
+    if not weaponData then return end 
+
+    local handle = tool:FindFirstChild("Handle")
+    if not handle then return end 
+
+    local shootSound = handle:FindFirstChild("ShootSound")
+    local reloadSound = handle:FindFirstChild("ReloadSound")
+
+    if shootSound and weaponData.ShootSound then
+        shootSound.SoundId = "rbxassetid://" .. weaponData.ShootSound
+    end
+
+    if reloadSound and weaponData.ReloadSound then
+        reloadSound.SoundId = "rbxassetid://" .. weaponData.ReloadSound
+    end
+end
+
+local function applySoundPackToAllTools()
+    local char = player.Character
+    if char then
+        for _, tool in ipairs(char:GetChildren()) do
+            if tool:IsA("Tool") then
+                applySoundPackToTool(tool)
+            end
+        end
+    end
+
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                applySoundPackToTool(tool)
+            end
+        end
+    end
+end
+
+function getgenv().SetWeaponSoundPack(packName)
+    if packName == "None" or not packName then
+        CurrentSoundPack = nil
+    else
+        CurrentSoundPack = packName
+    end
+    applySoundPackToAllTools()
+end
+
+local function hookToolContainer(container)
+    if not container then return end
+    container.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            task.wait()
+            applySoundPackToTool(child)
+        end
+    end)
+end
+
+hookToolContainer(player:FindFirstChild("Backpack"))
+if player.Character then
+    hookToolContainer(player.Character)
+end
+
+player.CharacterAdded:Connect(function(char)
+    hookToolContainer(char)
+    task.wait(0.5)
+    applySoundPackToAllTools()
+end)
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/prison-life/refs/heads/main/UI"))()
