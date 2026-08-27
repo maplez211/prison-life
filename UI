@@ -14,11 +14,11 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.3 | by 2knw",
+    Footer = "Version 0.4.4 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
-    Size = UDim2.fromOffset(700, 600), 
+    Size = UDim2.fromOffset(700, 750), 
     Center = true,
     Resizable = true, 
     SidebarCompacted = true,
@@ -470,6 +470,41 @@ AimbotMidBox:AddSlider("HitChance", {
     end,
 })
 
+-- ============ FOV SECTION ============
+local FOVBox = Tabs.Aimbot:AddGroupbox({
+    Name = "FOV",
+    Side = "Right",
+})
+
+FOVBox:AddSlider("FOVSize", {
+    Text = "FOV Size",
+    Default = 100,
+    Min = 30,
+    Max = 500,
+    Rounding = 0,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.FOVRadius = Value
+    end,
+})
+
+FOVBox:AddLabel("FOV Color"):AddColorPicker("FOVColor", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "FOV Color",
+    Text = "FOV Color",
+    Tooltip = "Choose the FOV circle color",
+    Callback = function(Value)
+        setFOVColorRGB(Value)
+    end,
+})
+
+FOVBox:AddToggle("HideFOV", {
+    Text = "Hide FOV Circle",
+    Default = false,
+    Callback = function(v)
+        toggleFOVCircle(v)
+    end,
+})
+
 -- ============ WEAPON MODIFICATIONS (TABBOX) ============
 local WeaponModsTabbox = Tabs.Aimbot:AddRightTabbox("Weapon Modifications")
 
@@ -503,41 +538,6 @@ SoundTab:AddDropdown("WeaponSoundPack", {
     Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
     Callback = function(Value)
         getgenv().SetWeaponSoundPack(Value)
-    end,
-})
-
--- ============ FOV SECTION ============
-local FOVBox = Tabs.Aimbot:AddGroupbox({
-    Name = "FOV",
-    Side = "Right",
-})
-
-FOVBox:AddSlider("FOVSize", {
-    Text = "FOV Size",
-    Default = 100,
-    Min = 30,
-    Max = 500,
-    Rounding = 0,
-    Callback = function(Value)
-        getgenv().SilentAimSettings.FOVRadius = Value
-    end,
-})
-
-FOVBox:AddLabel("FOV Color"):AddColorPicker("FOVColor", {
-    Default = Color3.fromRGB(255, 255, 255),
-    Title = "FOV Color",
-    Text = "FOV Color",
-    Tooltip = "Choose the FOV circle color",
-    Callback = function(Value)
-        setFOVColorRGB(Value)
-    end,
-})
-
-FOVBox:AddToggle("HideFOV", {
-    Text = "Hide FOV Circle",
-    Default = false,
-    Callback = function(v)
-        toggleFOVCircle(v)
     end,
 })
 
