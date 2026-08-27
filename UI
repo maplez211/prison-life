@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.0 | by 2knw",
+    Footer = "Version 0.4.1 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -504,7 +504,7 @@ local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
 SoundTab:AddDropdown("WeaponSoundPack", {
-    Values = {"None", "Old Sounds"},
+    Values = {"None", "Old Sounds", "Realistic Sounds"},
     Default = "None",
     Text = "Sound Pack",
     Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
