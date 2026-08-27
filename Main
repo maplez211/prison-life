@@ -15,6 +15,7 @@ local camera = workspace.CurrentCamera
 -- ============ SETTINGS ============
 getgenv().SilentAimSettings = {
     Enabled = true,
+    ForceFieldCheck = true,
     TargetPart = "HumanoidRootPart",
     Method = "Raycast",
     VisibleCheck = true,
@@ -73,6 +74,11 @@ function toggleFOVCircle(hide)
     if stroke then
         stroke.Enabled = not hide
     end
+end
+
+-- ============ FORCEFIELD CHECK ============
+function toggleForceFieldCheck(enabled)
+    Settings.ForceFieldCheck = enabled
 end
 
 -- ============ TRACER BEAM SYSTEM (um beam por player) ============
@@ -259,6 +265,10 @@ local function isValidTarget(plr)
 
     if Settings.VisibleCheck then
         if not isVisible(plr.Character) then return false end
+    end
+
+    if Settings.ForceFieldCheck then
+        if plr.Character:FindFirstChildOfClass("ForceField") then return false end
     end
     
     if Settings.HostileCheck or Settings.TrespassCheck then
@@ -1042,6 +1052,16 @@ local SoundPacks = {
         ["MP5"] = { ShootSound = 18512721424, ReloadSound = 76130542042000 },
         ["Revolver"] = { ShootSound = 104543426818240, ReloadSound = 139717586861911 },
     },
+    ["Bubble Sounds"] = {
+        ["AK-47"] = { ShootSound = 132948338000932 },
+        ["Remington 870"] = { ShootSound = 8622833875 },
+        ["M9"] = { ShootSound = 95635059379804 },
+        ["M700"] = { ShootSound = 117813075686953 },
+        ["M4A1"] = { ShootSound = 109244508089412 },
+        ["FAL"] = { ShootSound = 85730811347567 },
+        ["MP5"] = { ShootSound = 125251276586253 },
+        ["Revolver"] = { ShootSound = 134530432300459 },
+    },
 }
 
 local CurrentSoundPack = nil
@@ -1092,12 +1112,24 @@ local function applySoundPackToAllTools()
 end
 
 getgenv().SetWeaponSoundPack = function(packName)
+    if typeof(packName) == "table" then
+        return
+    end
+
     if packName == "None" or not packName then
         CurrentSoundPack = nil
     else
         CurrentSoundPack = packName
     end
+
     applySoundPackToAllTools()
+
+    task.spawn(function()
+        for i = 1, 10 do
+            task.wait(0.5)
+            applySoundPackToAllTools()
+        end
+    end)
 end
 
 local function hookToolContainer(container)
