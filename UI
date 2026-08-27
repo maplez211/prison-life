@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.2 | by 2knw",
+    Footer = "Version 0.4.3 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -300,6 +300,8 @@ AimbotLeftBox:AddToggle("ForceFieldCheck", {
     end,
 })
 
+AimbotLeftBox:AddDivider()
+
 AimbotLeftBox:AddDropdown("TargetTeams", {
     Values = {"Inmates", "Guards", "Criminals"},
     Multi = true,
@@ -351,6 +353,83 @@ AimbotLeftBox:AddDropdown("TargetMode", {
     end,
 })
 
+AimbotLeftBox:AddDivider()
+
+local targetOptions = {}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(targetOptions, plr.Name)
+    end
+end
+
+AimbotLeftBox:AddDropdown("TargetOn", {
+    Values = targetOptions,
+    Default = 1,
+    Text = "Target On",
+    Tooltip = "Select specific players to target",
+    Multi = true,
+    AllowNull = true,
+    Callback = function(Value)
+        if not Value or #Value == 0 then
+            getgenv().SilentAimSettings.TargetOnPlayer = {}
+        else
+            getgenv().SilentAimSettings.TargetOnPlayer = Value
+        end
+    end,
+})
+
+AimbotLeftBox:AddButton({
+    Text = "Reset Target",
+    Func = function()
+        getgenv().SilentAimSettings.TargetOnPlayer = {}
+        local newOptions = {}
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                table.insert(newOptions, plr.Name)
+            end
+        end
+        Options.TargetOn:SetValues(newOptions)
+        Options.TargetOn:SetValue({})
+    end,
+})
+
+AimbotLeftBox:AddDropdown("IgnoreTarget", {
+    Values = targetOptions,
+    Default = 1,
+    Text = "Ignore Target",
+    Tooltip = "Select players to completely ignore",
+    Multi = true,
+    AllowNull = true,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.IgnoreTargets = Value or {}
+    end,
+})
+
+AimbotLeftBox:AddButton({
+    Text = "Reset Ignore List",
+    Func = function()
+        getgenv().SilentAimSettings.IgnoreTargets = {}
+        local newOptions = {}
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                table.insert(newOptions, plr.Name)
+            end
+        end
+        Options.IgnoreTarget:SetValues(newOptions)
+        Options.IgnoreTarget:SetValue({})
+    end,
+})
+
+AimbotLeftBox:AddDropdown("TargetPart", {
+    Values = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
+    Default = "HumanoidRootPart",
+    Text = "Target Part",
+    Tooltip = "Choose which body part the Silent Aim will lock onto",
+    Callback = function(Value)
+        getgenv().SilentAimSettings.TargetPart = Value
+    end,
+})
+
 -- ============ AIMBOT SLIDERS ============
 local AimbotMidBox = Tabs.Aimbot:AddGroupbox({
     Name = "Smoothing & Accuracy",
@@ -391,84 +470,39 @@ AimbotMidBox:AddSlider("HitChance", {
     end,
 })
 
--- ============ TARGET SELECTION ============
-local TargetBox = Tabs.Aimbot:AddGroupbox({
-    Name = "Target Selection",
-    Side = "Right",
+-- ============ WEAPON MODIFICATIONS (TABBOX) ============
+local WeaponModsTabbox = Tabs.Aimbot:AddRightTabbox("Weapon Modifications")
+
+-- Tab 1: Gun Mod settings (default active)
+local GunModTab = WeaponModsTabbox:AddTab(nil, "wrench")
+
+GunModTab:AddToggle("EnableGunMod", {
+    Text = "Enable Gun Mod",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.GunModEnabled = v
+    end,
 })
 
-local targetOptions = {}
-for _, plr in ipairs(Players:GetPlayers()) do
-    if plr ~= player then
-        table.insert(targetOptions, plr.Name)
-    end
-end
+GunModTab:AddToggle("AutoFire", {
+    Text = "Auto Fire",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.AutoFire = v
+    end,
+})
 
-TargetBox:AddDropdown("TargetOn", {
-    Values = targetOptions,
-    Default = 1,
-    Text = "Target On",
-    Tooltip = "Select specific players to target",
-    Multi = true,
-    AllowNull = true,
+local ChainTab = WeaponModsTabbox:AddTab(nil, "link")
+local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
+local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
+
+SoundTab:AddDropdown("WeaponSoundPack", {
+    Values = {"None", "Old Sounds", "Realistic Sounds", "Bubble Sounds"},
+    Default = "None",
+    Text = "Sound Pack",
+    Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
     Callback = function(Value)
-        if not Value or #Value == 0 then
-            getgenv().SilentAimSettings.TargetOnPlayer = {}
-        else
-            getgenv().SilentAimSettings.TargetOnPlayer = Value
-        end
-    end,
-})
-
-TargetBox:AddButton({
-    Text = "Reset Target",
-    Func = function()
-        getgenv().SilentAimSettings.TargetOnPlayer = {}
-        local newOptions = {}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(newOptions, plr.Name)
-            end
-        end
-        Options.TargetOn:SetValues(newOptions)
-        Options.TargetOn:SetValue({})
-    end,
-})
-
-TargetBox:AddDropdown("IgnoreTarget", {
-    Values = targetOptions,
-    Default = 1,
-    Text = "Ignore Target",
-    Tooltip = "Select players to completely ignore",
-    Multi = true,
-    AllowNull = true,
-    Callback = function(Value)
-        getgenv().SilentAimSettings.IgnoreTargets = Value or {}
-    end,
-})
-
-TargetBox:AddButton({
-    Text = "Reset Ignore List",
-    Func = function()
-        getgenv().SilentAimSettings.IgnoreTargets = {}
-        local newOptions = {}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(newOptions, plr.Name)
-            end
-        end
-        Options.IgnoreTarget:SetValues(newOptions)
-        Options.IgnoreTarget:SetValue({})
-    end,
-})
-
-TargetBox:AddDropdown("TargetPart", {
-    Values = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
-    Default = "HumanoidRootPart",
-    Text = "Target Part",
-    Tooltip = "Choose which body part the Silent Aim will lock onto",
-    Callback = function(Value)
-        getgenv().SilentAimSettings.TargetPart = Value
+        getgenv().SetWeaponSoundPack(Value)
     end,
 })
 
@@ -504,42 +538,6 @@ FOVBox:AddToggle("HideFOV", {
     Default = false,
     Callback = function(v)
         toggleFOVCircle(v)
-    end,
-})
-
--- ============ WEAPON MODIFICATIONS (TABBOX) ============
-local WeaponModsTabbox = Tabs.Aimbot:AddRightTabbox("Weapon Modifications")
-
--- Tab 1: Gun Mod settings (default active)
-local GunModTab = WeaponModsTabbox:AddTab(nil, "wrench")
-
-GunModTab:AddToggle("EnableGunMod", {
-    Text = "Enable Gun Mod",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.GunModEnabled = v
-    end,
-})
-
-GunModTab:AddToggle("AutoFire", {
-    Text = "Auto Fire",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.AutoFire = v
-    end,
-})
-
-local ChainTab = WeaponModsTabbox:AddTab(nil, "link")
-local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
-local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
-
-SoundTab:AddDropdown("WeaponSoundPack", {
-    Values = {"None", "Old Sounds", "Realistic Sounds", "Bubble Sounds"},
-    Default = "None",
-    Text = "Sound Pack",
-    Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
-    Callback = function(Value)
-        getgenv().SetWeaponSoundPack(Value)
     end,
 })
 
