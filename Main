@@ -1032,6 +1032,16 @@ local SoundPacks = {
         ["MP5"] = { ShootSound = 18512721424, ReloadSound = 142491708 },
         ["Revolver"] = { ShootSound = 120052619815455, ReloadSound = 2041035308 },
     },
+    ["Realistic Sounds"] = {
+        ["AK-47"] = { ShootSound = 122029429692679, ReloadSound = 76130542042000 },
+        ["Remington 870"] = { ShootSound = 133317933391361, ReloadSound = 145081845 },
+        ["M9"] = { ShootSound = 134436500, ReloadSound = 8302576808 },
+        ["M700"] = { ShootSound = 9069987808, ReloadSound = 145081845 },
+        ["M4A1"] = { ShootSound = 9341262362, ReloadSound = 76130542042000 },
+        ["FAL"] = { ShootSound = 120948620089551, ReloadSound = 76130542042000 },
+        ["MP5"] = { ShootSound = 18512721424, ReloadSound = 76130542042000 },
+        ["Revolver"] = { ShootSound = 104543426818240, ReloadSound = 139717586861911 },
+    },
 }
 
 local CurrentSoundPack = nil
