@@ -1123,13 +1123,6 @@ getgenv().SetWeaponSoundPack = function(packName)
     end
 
     applySoundPackToAllTools()
-
-    task.spawn(function()
-        for i = 1, 10 do
-            task.wait(0.5)
-            applySoundPackToAllTools()
-        end
-    end)
 end
 
 local function hookToolContainer(container)
