@@ -223,10 +223,27 @@ local function isVisible(targetCharacter)
     if not hrp then return false end
     local origin = camera.CFrame.Position
     local direction = hrp.Position - origin
+
+    local ignoreList = {player.Character, targetCharacter}
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Blacklist
-    params.FilterDescendantsInstances = {player.Character, targetCharacter}
-    return Workspace:Raycast(origin, direction, params) == nil
+    params.FilterDescendantsInstances = ignoreList
+
+    for i = 1, 10 do
+        local result = Workspace:Raycast(origin, direction, params)
+        if not result then
+            return true
+        end
+
+        if result.Instance:IsA("BasePart") and result.Instance.Transparency >= 0.001 then
+            table.insert(ignoreList, result.Instance)
+            params.FilterDescendantsInstances = ignoreList
+        else
+            return false
+        end
+    end
+
+    return false
 end
 
 local function isValidTarget(plr)
