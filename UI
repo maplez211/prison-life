@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.1 | by 2knw",
+    Footer = "Version 0.4.2 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -291,21 +291,12 @@ AimbotLeftBox:AddToggle("FriendCheck", {
     end,
 })
 
-AimbotLeftBox:AddToggle("HostileCheck", {
-    Text = "Hostile Check",
-    Tooltip = "Only target hostile inmates",
-    Default = false,
+AimbotLeftBox:AddToggle("ForceFieldCheck", {
+    Text = "ForceField Check",
+    Tooltip = "Ignore players who currently have a ForceField",
+    Default = true,
     Callback = function(v)
-        getgenv().SilentAimSettings.HostileCheck = v
-    end,
-})
-
-AimbotLeftBox:AddToggle("TrespassCheck", {
-    Text = "Trespass Check",
-    Tooltip = "Only target trespassing inmates",
-    Default = false,
-    Callback = function(v)
-        getgenv().SilentAimSettings.TrespassCheck = v
+        getgenv().SilentAimSettings.ForceFieldCheck = v
     end,
 })
 
@@ -320,6 +311,45 @@ AimbotLeftBox:AddDropdown("TargetTeams", {
 })
 
 Options.TargetTeams:SetValue({ Inmates = true, Guards = true, Criminals = true })
+
+-- ============ TARGET MODE ============
+local lastTargetModeSelection = { ["Manual"] = true }
+
+AimbotLeftBox:AddDropdown("TargetMode", {
+    Values = {"Manual", "🔗 Trespass", "💢 Hostile"},
+    Multi = true,
+    Default = { ["Manual"] = true },
+    Text = "Target Mode",
+    Tooltip = "Manual grabs any valid player. Trespass/Hostile restrict targeting to inmates flagged as such (can combine both, but not with Manual)",
+    Callback = function(Value)
+        Value = Value or {}
+
+        local wasManual = lastTargetModeSelection["Manual"]
+        local isManual = Value["Manual"]
+        local isTrespass = Value["🔗 Trespass"]
+        local isHostile = Value["💢 Hostile"]
+
+        local manualJustSelected = isManual and not wasManual
+
+        local finalValue = {}
+
+        if manualJustSelected then
+            finalValue = { ["Manual"] = true }
+        elseif isTrespass or isHostile then
+            if isTrespass then finalValue["🔗 Trespass"] = true end
+            if isHostile then finalValue["💢 Hostile"] = true end
+        else
+            finalValue = { ["Manual"] = true }
+        end
+
+        lastTargetModeSelection = finalValue
+
+        getgenv().SilentAimSettings.TrespassCheck = finalValue["🔗 Trespass"] == true
+        getgenv().SilentAimSettings.HostileCheck = finalValue["💢 Hostile"] == true
+
+        Options.TargetMode:SetValue(finalValue)
+    end,
+})
 
 -- ============ AIMBOT SLIDERS ============
 local AimbotMidBox = Tabs.Aimbot:AddGroupbox({
@@ -504,7 +534,7 @@ local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
 SoundTab:AddDropdown("WeaponSoundPack", {
-    Values = {"None", "Old Sounds", "Realistic Sounds"},
+    Values = {"None", "Old Sounds", "Realistic Sounds", "Bubble Sounds"},
     Default = "None",
     Text = "Sound Pack",
     Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
