@@ -255,11 +255,7 @@ if Library.IsMobile then
 end
 
 -- ============ PLAYERS TAB ============
-local PlayerSettingsBox = Tabs.Teleports:AddGroupbox({
-    Name = "Misc",
-    Icon = "sliders",
-    Side = "Left",
-})
+local PlayerSettingsBox = Tabs.Teleports:AddLeftGroupbox("Misc", "sliders")
 
 PlayerSettingsBox:AddSlider("CameraFOV", {
     Text = "Camera FOV",
@@ -286,11 +282,7 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
     end,
 })
 
-local PlayersBox = Tabs.Teleports:AddGroupbox({
-    Name = "Players",
-    Icon = "users",
-    Side = "Left",
-})
+local PlayersBox = Tabs.Teleports:AddLeftGroupbox("Players", "users")
 
 
 local playerOptions = {"Select a player..."}
@@ -413,11 +405,7 @@ PlayersBox:AddButton({
 })
 
 -- ============ AIMBOT TAB ============
-local AimbotLeftBox = Tabs.Aimbot:AddGroupbox({
-    Name = "Aim Settings",
-    Icon = "crosshair",
-    Side = "Left",
-})
+local AimbotLeftBox = Tabs.Aimbot:AddLeftGroupbox("Aim Settings", "crosshair")
 
 AimbotLeftBox:AddToggle("SilentAim", {
     Text = "Silent Aim",
@@ -554,11 +542,7 @@ AimbotLeftBox:AddDropdown("TargetPart", {
 })
 
 -- ============ AIMBOT SLIDERS ============
-local AimbotMidBox = Tabs.Aimbot:AddGroupbox({
-    Name = "Smoothing & Accuracy",
-    Icon = "target",
-    Side = "Left",
-})
+local AimbotMidBox = Tabs.Aimbot:AddLeftGroupbox("Smoothing & Accuracy", "target")
 
 AimbotMidBox:AddSlider("SilentAimRange", {
     Text = "Silent Aim Range",
@@ -595,11 +579,7 @@ AimbotMidBox:AddSlider("HitChance", {
 })
 
 -- ============ FOV SECTION ============
-local FOVBox = Tabs.Aimbot:AddGroupbox({
-    Name = "Settings",
-    Icon = "settings",
-    Side = "Right",
-})
+local FOVBox = Tabs.Aimbot:AddRightGroupbox("Settings", "settings")
 
 local FOVIconTabbox = FOVBox:AddTabbox()
 local FOVEyeTab = FOVIconTabbox:AddTab(nil, "scan-eye")
@@ -734,11 +714,7 @@ SoundTab:AddDropdown("WeaponSoundPack", {
 })
 
 -- ============ VISUALS TAB ============
-local VisualsLeftBox = Tabs.Visuals:AddGroupbox({
-    Name = "Highlight ESP",
-    Icon = "eye",
-    Side = "Left",
-})
+local VisualsLeftBox = Tabs.Visuals:AddLeftGroupbox("Highlight ESP", "eye")
 
 VisualsLeftBox:AddToggle("ESP", {
     Text = "Highlight ESP",
@@ -821,11 +797,7 @@ CustomBox:AddDropdown("Skyboxes", {
 })
 
 -- ============ TRACER ESP SECTION ============
-local TracerBox = Tabs.Visuals:AddGroupbox({
-    Name = "Tracer ESP",
-    Icon = "zap",
-    Side = "Left",
-})
+local TracerBox = Tabs.Visuals:AddLeftGroupbox("Tracer ESP", "zap")
 
 TracerBox:AddToggle("TracerESP", {
     Text = "Tracer ESP",
@@ -907,11 +879,7 @@ ClampColorPickerToScreen("FogColor")
 ClampColorPickerToScreen("TracerColor")
 
 -- ============ TELEPORTS TAB ============
-local TeleportsBox = Tabs.Teleports:AddGroupbox({
-    Name = "Teleports",
-    Icon = "map-pin",
-    Side = "Right",
-})
+local TeleportsBox = Tabs.Teleports:AddRightGroupbox("Teleports", "map-pin")
 
 local teleports = {
     {"Nexus 1", Vector3.new(864, 100, 2406)},
@@ -953,11 +921,7 @@ for _, tp in ipairs(teleports) do
 end
 
 -- ============ UI SETTINGS ============
-local MenuGroup = Tabs["UI Settings"]:AddGroupbox({
-    Name = "Menu",
-    Icon = "settings",
-    Side = "Left",
-})
+local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu", "settings")
 
 MenuGroup:AddToggle("KeybindMenuOpen", {
     Text = "Open Keybind Menu",
