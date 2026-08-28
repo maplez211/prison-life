@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(140, 40, 40)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.7 | by 2knw",
+    Footer = "Version 0.4.8 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -279,6 +279,75 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
     Rounding = 1,
     Callback = function(Value)
         getgenv().SilentAimSettings.SpinbotSpeed = Value
+    end,
+})
+
+-- ============ ENVIRONMENT GROUP ============
+local EnvironmentBox = Tabs.Teleports:AddLeftGroupbox("Environment", "trees")
+
+EnvironmentBox:AddLabel("World appearance settings", true)
+
+local EnvironmentTabbox = EnvironmentBox:AddTabbox()
+local EnvironmentNetworkTab = EnvironmentTabbox:AddTab(nil, "globe")
+local EnvironmentCloudTab = EnvironmentTabbox:AddTab(nil, "cloud")
+
+-- ---- World Gradient (Network Tab) ----
+local WorldGradientEnabled = false
+
+EnvironmentNetworkTab:AddToggle("WorldGradient", {
+    Text = "World Gradient",
+    Tooltip = "Enables custom world gradient colors",
+    Default = false,
+    Callback = function(v)
+        WorldGradientEnabled = v
+    end,
+})
+
+EnvironmentNetworkTab:AddColorPicker("GradientColor", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "Gradient Color",
+    Text = "Gradient Color",
+    Tooltip = "Sets the world gradient color",
+    Callback = function(Value)
+        if WorldGradientEnabled then
+            game:GetService("Lighting").Ambient = Value
+        end
+    end,
+})
+
+EnvironmentNetworkTab:AddColorPicker("OutdoorGradient", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "Outdoor Gradient",
+    Text = "Outdoor Gradient",
+    Tooltip = "Sets the outdoor gradient color",
+    Callback = function(Value)
+        if WorldGradientEnabled then
+            game:GetService("Lighting").OutdoorAmbient = Value
+        end
+    end,
+})
+
+-- ---- Custom Skybox ----
+local CustomSkyboxEnabled = false
+
+EnvironmentCloudTab:AddToggle("CustomSkybox", {
+    Text = "Custom Skybox",
+    Tooltip = "Enables applying a custom skybox",
+    Default = false,
+    Callback = function(v)
+        CustomSkyboxEnabled = v
+    end,
+})
+
+EnvironmentCloudTab:AddDropdown("Skyboxes", {
+    Values = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox", "Morioh Skybox", "Rainy Skybox"},
+    Default = "None",
+    Text = "Skyboxes",
+    Tooltip = "Choose your skybox",
+    Callback = function(Value)
+        if CustomSkyboxEnabled then
+            setSkybox(Value)
+        end
     end,
 })
 
@@ -783,16 +852,6 @@ CustomBox:AddLabel("Fog Color"):AddColorPicker("FogColor", {
     Tooltip = "Choose the fog color",
     Callback = function(Value)
         setFogColorRGB(Value)
-    end,
-})
-
-CustomBox:AddDropdown("Skyboxes", {
-    Values = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox", "Morioh Skybox", "Rainy Skybox"},
-    Default = "None",
-    Text = "Skyboxes",
-    Tooltip = "Choose your skybox",
-    Callback = function(Value)
-        setSkybox(Value)
     end,
 })
 
