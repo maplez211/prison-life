@@ -23,7 +23,7 @@ local Window = Library:CreateWindow({
     Resizable = true, 
     SidebarCompacted = true,
     ShowMobileButtons = false,
-    CornerRadius = 20,
+    CornerRadius = 10,
 })
 
 -- ============ TABS ============
@@ -58,12 +58,36 @@ local function formatUptime(seconds)
     return string.format("%dh %dm %ds", h, m, s)
 end
 
-local ProfileBox = Tabs.Info:AddLeftGroupbox("Player & Game Info")
+local InfoTabLeft = Tabs.Info.Sides[1]
+local InfoTabRight = Tabs.Info.Sides[2]
+local InfoTabContainer = InfoTabLeft.Parent
+
+local PROFILE_HEIGHT = 110
+local PROFILE_GAP = 8
+
+-- ============ PROFILE PANEL (largura total, sem seta de collapse) ============
+local ProfileHolder = Instance.new("Frame")
+ProfileHolder.Name = "ProfilePanel"
+ProfileHolder.BackgroundColor3 = Library.Scheme.BackgroundColor
+ProfileHolder.Position = UDim2.fromScale(0, 0)
+ProfileHolder.Size = UDim2.new(1, 0, 0, PROFILE_HEIGHT)
+ProfileHolder.Parent = InfoTabContainer
+
+Library:AddToRegistry(ProfileHolder, { BackgroundColor3 = "BackgroundColor" })
+
+local ProfileCorner = Instance.new("UICorner")
+ProfileCorner.CornerRadius = UDim.new(0, Library.CornerRadius)
+ProfileCorner.Parent = ProfileHolder
+table.insert(Library.Corners, ProfileCorner)
+
+Library:AddOutline(ProfileHolder)
+
 local ProfileFrame = Instance.new("Frame")
 ProfileFrame.Name = "ProfileFrame"
 ProfileFrame.BackgroundTransparency = 1
-ProfileFrame.Size = UDim2.new(1, 0, 0, 90)
-ProfileFrame.Parent = ProfileBox.Container
+ProfileFrame.Size = UDim2.new(1, -16, 1, -16)
+ProfileFrame.Position = UDim2.fromOffset(8, 8)
+ProfileFrame.Parent = ProfileHolder
 
 local HeadshotImage = Instance.new("ImageLabel")
 HeadshotImage.Name = "Headshot"
@@ -98,6 +122,8 @@ GreetingLabel.TextColor3 = Library.Scheme.FontColor
 GreetingLabel.Text = getGreeting() .. ", " .. player.Name .. "!"
 GreetingLabel.Parent = ProfileFrame
 
+Library:AddToRegistry(GreetingLabel, { TextColor3 = "FontColor" })
+
 local ExecutorName = "Unknown"
 pcall(function()
     if identifyexecutor then
@@ -121,11 +147,25 @@ InfoDetailsLabel.Text = "• Executor: " .. ExecutorName .. "\n"
     .. "• Time: " .. os.date("%I:%M %p")
 InfoDetailsLabel.Parent = ProfileFrame
 
+local function RepositionInfoSides()
+    local Offset = PROFILE_HEIGHT + PROFILE_GAP
+    InfoTabLeft.Position = UDim2.new(0, 0, 0, Offset)
+    InfoTabLeft.Size = UDim2.new(0.5, -3, 1, -Offset)
+
+    InfoTabRight.Position = UDim2.new(1, 0, 0, Offset)
+    InfoTabRight.Size = UDim2.new(0.5, -3, 1, -Offset)
+end
+RepositionInfoSides()
+
+function Tabs.Info:RefreshSides()
+    RepositionInfoSides()
+end
+
 -- ============ UPDATES GROUP ============
 local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates")
 
-UpdatesBox:AddLabel("[UPD] Prison Life")
-UpdatesBox:AddLabel("- Added ForceField Check\n- Added Weapon Sound Packs\n- Added Target Mode (Trespass/Hostile)\n- Reorganized Aim Settings layout")
+UpdatesBox:AddLabel("[UPD] Prison Life", true)
+UpdatesBox:AddLabel("- Added ForceField Check\n- Added Weapon Sound Packs\n- Added Target Mode (Trespass/Hostile)\n- Reorganized Aim Settings layout", true)
 
 UpdatesBox:AddDivider("Info")
 
@@ -146,7 +186,7 @@ pcall(function()
     regionCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(player)
 end)
 
-local ServerStatsLabel = ServerStatsBox:AddLabel("Region: " .. regionCode .. "\nCountry: " .. regionCode .. "\nUptime: " .. formatUptime(tick() - scriptStartTime))
+local ServerStatsLabel = ServerStatsBox:AddLabel("Region: " .. regionCode .. "\nCountry: " .. regionCode .. "\nUptime: " .. formatUptime(tick() - scriptStartTime), true)
 
 task.spawn(function()
     while task.wait(1) do
