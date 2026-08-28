@@ -35,7 +35,7 @@ local Tabs = {
     ["UI Settings"] = Window:AddTab("UI Settings", "settings", "Customize the UI behavior and appearance"),
 }
 
-Library:SetDPIScale(90)
+Library:SetDPIScale(95)
 
 -- ============ INFO TAB ============
 local scriptStartTime = tick()
@@ -69,8 +69,8 @@ local PROFILE_GAP = 8
 local ProfileHolder = Instance.new("Frame")
 ProfileHolder.Name = "ProfilePanel"
 ProfileHolder.BackgroundColor3 = Library.Scheme.BackgroundColor
-ProfileHolder.Position = UDim2.fromScale(0, 0)
-ProfileHolder.Size = UDim2.new(1, 0, 0, PROFILE_HEIGHT)
+ProfileHolder.Position = UDim2.fromOffset(1, 0)
+ProfileHolder.Size = UDim2.new(1, -2, 0, PROFILE_HEIGHT)
 ProfileHolder.Parent = InfoTabContainer
 
 Library:AddToRegistry(ProfileHolder, { BackgroundColor3 = "BackgroundColor" })
