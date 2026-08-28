@@ -35,14 +35,15 @@ getgenv().SilentAimSettings = {
     HostileCheck = false,
     TrespassCheck = false,
     TracerColor = Color3.fromRGB(255, 182, 255),
-    TracerThickness = 0.2,
+    TracerThickness = 0.1,
     TracerESPEnabled = false,
     TracerTargetOnly = false,
     Autoshoot = false,
     SilentAimRange = 500,
     CameraFOV = 70,
     TargetOnPlayer = {},
-    IgnoreTargets = {}
+    IgnoreTargets = {},
+    AimMode = "FOV"  
 }
 
 local Settings = getgenv().SilentAimSettings
@@ -359,6 +360,24 @@ local function getClosestTarget()
     local closest = nil
     local shortestDistance = math.huge
     
+    -- Se o modo for "Distance", seleciona o player mais próximo (ignorando FOV)
+    if Settings.AimMode == "Distance" then
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if isValidTarget(plr) then
+                local part = plr.Character:FindFirstChild(Settings.TargetPart) or plr.Character:FindFirstChild("HumanoidRootPart")
+                if part then
+                    local worldDist = (part.Position - localRoot.Position).Magnitude
+                    if worldDist < shortestDistance then
+                        closest = part
+                        shortestDistance = worldDist
+                    end
+                end
+            end
+        end
+        return closest
+    end
+    
+    -- Modo padrão "FOV" - seleciona dentro do FOV
     for _, plr in ipairs(Players:GetPlayers()) do
         if isValidTarget(plr) then
             local part = plr.Character:FindFirstChild(Settings.TargetPart) or plr.Character:FindFirstChild("HumanoidRootPart")
