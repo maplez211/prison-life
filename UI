@@ -11,7 +11,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-Library.Scheme.AccentColor = Color3.fromRGB(128, 0, 0)
+Library.Scheme.AccentColor = Color3.fromRGB(140, 40, 40)
 
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
@@ -532,36 +532,6 @@ for _, plr in ipairs(Players:GetPlayers()) do
     end
 end
 
-AimbotLeftBox:AddButton({
-    Text = "Reset Target",
-    Func = function()
-        getgenv().SilentAimSettings.TargetOnPlayer = {}
-        local newOptions = {}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(newOptions, plr.Name)
-            end
-        end
-        Options.TargetOn:SetValues(newOptions)
-        Options.TargetOn:SetValue({})
-    end,
-})
-
-AimbotLeftBox:AddButton({
-    Text = "Reset Ignore List",
-    Func = function()
-        getgenv().SilentAimSettings.IgnoreTargets = {}
-        local newOptions = {}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(newOptions, plr.Name)
-            end
-        end
-        Options.IgnoreTarget:SetValues(newOptions)
-        Options.IgnoreTarget:SetValue({})
-    end,
-})
-
 AimbotLeftBox:AddDropdown("TargetPart", {
     Values = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
     Default = "HumanoidRootPart",
@@ -618,7 +588,11 @@ local FOVBox = Tabs.Aimbot:AddGroupbox({
     Side = "Right",
 })
 
-FOVBox:AddToggle("HideFOV", {
+local FOVIconTabbox = FOVBox:AddTabbox()
+local FOVEyeTab = FOVIconTabbox:AddTab(nil, "scan-eye")
+local FOVUsersTab = FOVIconTabbox:AddTab(nil, "users")
+
+FOVEyeTab:AddToggle("HideFOV", {
     Text = "Show FOV Circle",
     Default = true,
     Callback = function(v)
@@ -634,7 +608,7 @@ FOVBox:AddToggle("HideFOV", {
     end,
 })
 
-FOVBox:AddSlider("FOVSize", {
+FOVEyeTab:AddSlider("FOVSize", {
     Text = "FOV Circle Radius",
     Default = 100,
     Min = 30,
@@ -644,10 +618,6 @@ FOVBox:AddSlider("FOVSize", {
         getgenv().SilentAimSettings.FOVRadius = Value
     end,
 })
-
-local FOVIconTabbox = FOVBox:AddTabbox()
-local FOVEyeTab = FOVIconTabbox:AddTab(nil, "scan-eye")
-local FOVUsersTab = FOVIconTabbox:AddTab(nil, "users")
 
 FOVUsersTab:AddDropdown("TargetOn", {
     Values = targetOptions,
@@ -667,6 +637,21 @@ FOVUsersTab:AddDropdown("TargetOn", {
     end,
 })
 
+FOVUsersTab:AddButton({
+    Text = "Reset Target",
+    Func = function()
+        getgenv().SilentAimSettings.TargetOnPlayer = {}
+        local newOptions = {}
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                table.insert(newOptions, plr.Name)
+            end
+        end
+        Options.TargetOn:SetValues(newOptions)
+        Options.TargetOn:SetValue({})
+    end,
+})
+
 FOVUsersTab:AddDropdown("IgnoreTarget", {
     Values = targetOptions,
     Default = 1,
@@ -682,6 +667,21 @@ FOVUsersTab:AddDropdown("IgnoreTarget", {
             end
         end
         getgenv().SilentAimSettings.IgnoreTargets = list
+    end,
+})
+
+FOVUsersTab:AddButton({
+    Text = "Reset Ignore List",
+    Func = function()
+        getgenv().SilentAimSettings.IgnoreTargets = {}
+        local newOptions = {}
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                table.insert(newOptions, plr.Name)
+            end
+        end
+        Options.IgnoreTarget:SetValues(newOptions)
+        Options.IgnoreTarget:SetValue({})
     end,
 })
 
