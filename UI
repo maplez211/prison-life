@@ -11,7 +11,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-Library.Scheme.AccentColor = Color3.fromRGB(100, 240, 130)
+Library.Scheme.AccentColor = Color3.fromRGB(128, 0, 0)
 
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
@@ -211,7 +211,7 @@ if Library.IsMobile then
     local CustomToggleButton = Instance.new("ImageButton")
     CustomToggleButton.Name = "CustomToggleButton"
     CustomToggleButton.BackgroundColor3 = Library.Scheme.BackgroundColor
-    CustomToggleButton.Image = "rbxassetid://96742689768149"
+    CustomToggleButton.Image = "rbxassetid://111561535254070"
     CustomToggleButton.ScaleType = Enum.ScaleType.Fit
     CustomToggleButton.Size = UDim2.fromOffset(40, 40)
     CustomToggleButton.Position = UDim2.fromOffset(6, 6)
