@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(140, 40, 40)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.6 | by 2knw",
+    Footer = "Version 0.4.7 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -172,7 +172,7 @@ function Tabs.Info:RefreshSides()
 end
 
 -- ============ UPDATES GROUP ============
-local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates")
+local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates", "bell")
 
 UpdatesBox:AddLabel("Prison Life", true)
 UpdatesBox:AddLabel("- Many UI Changes\n- Ignore Player Fixed\n- Reorganized FOV Group", true)
@@ -189,7 +189,7 @@ UpdatesBox:AddButton({
 })
 
 -- ============ SERVER STATS GROUP ============
-local ServerStatsBox = Tabs.Info:AddRightGroupbox("Server Stats")
+local ServerStatsBox = Tabs.Info:AddRightGroupbox("Server Stats", "info")
 
 local regionCode = "Unknown"
 pcall(function()
@@ -257,6 +257,7 @@ end
 -- ============ PLAYERS TAB ============
 local PlayerSettingsBox = Tabs.Teleports:AddGroupbox({
     Name = "Misc",
+    Icon = "sliders",
     Side = "Left",
 })
 
@@ -287,6 +288,7 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
 
 local PlayersBox = Tabs.Teleports:AddGroupbox({
     Name = "Players",
+    Icon = "users",
     Side = "Left",
 })
 
@@ -413,6 +415,7 @@ PlayersBox:AddButton({
 -- ============ AIMBOT TAB ============
 local AimbotLeftBox = Tabs.Aimbot:AddGroupbox({
     Name = "Aim Settings",
+    Icon = "crosshair",
     Side = "Left",
 })
 
@@ -553,6 +556,7 @@ AimbotLeftBox:AddDropdown("TargetPart", {
 -- ============ AIMBOT SLIDERS ============
 local AimbotMidBox = Tabs.Aimbot:AddGroupbox({
     Name = "Smoothing & Accuracy",
+    Icon = "target",
     Side = "Left",
 })
 
@@ -593,6 +597,7 @@ AimbotMidBox:AddSlider("HitChance", {
 -- ============ FOV SECTION ============
 local FOVBox = Tabs.Aimbot:AddGroupbox({
     Name = "Settings",
+    Icon = "settings",
     Side = "Right",
 })
 
@@ -731,6 +736,7 @@ SoundTab:AddDropdown("WeaponSoundPack", {
 -- ============ VISUALS TAB ============
 local VisualsLeftBox = Tabs.Visuals:AddGroupbox({
     Name = "Highlight ESP",
+    Icon = "eye",
     Side = "Left",
 })
 
@@ -766,6 +772,7 @@ VisualsLeftBox:AddToggle("HideESPNames", {
 -- ============ CUSTOMIZATION ============
 local CustomBox = Tabs.Visuals:AddGroupbox({
     Name = "Customization",
+    Icon = "palette",
     Side = "Right",
 })
 
@@ -816,6 +823,7 @@ CustomBox:AddDropdown("Skyboxes", {
 -- ============ TRACER ESP SECTION ============
 local TracerBox = Tabs.Visuals:AddGroupbox({
     Name = "Tracer ESP",
+    Icon = "zap",
     Side = "Left",
 })
 
@@ -901,6 +909,7 @@ ClampColorPickerToScreen("TracerColor")
 -- ============ TELEPORTS TAB ============
 local TeleportsBox = Tabs.Teleports:AddGroupbox({
     Name = "Teleports",
+    Icon = "map-pin",
     Side = "Right",
 })
 
@@ -946,6 +955,7 @@ end
 -- ============ UI SETTINGS ============
 local MenuGroup = Tabs["UI Settings"]:AddGroupbox({
     Name = "Menu",
+    Icon = "settings",
     Side = "Left",
 })
 
