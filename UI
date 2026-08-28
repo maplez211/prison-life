@@ -303,7 +303,7 @@ EnvironmentNetworkTab:AddToggle("WorldGradient", {
     end,
 })
 
-EnvironmentNetworkTab:AddColorPicker("GradientColor", {
+EnvironmentNetworkTab:AddLabel("Gradient Color"):AddColorPicker("GradientColor", {
     Default = Color3.fromRGB(255, 255, 255),
     Title = "Gradient Color",
     Text = "Gradient Color",
@@ -315,7 +315,7 @@ EnvironmentNetworkTab:AddColorPicker("GradientColor", {
     end,
 })
 
-EnvironmentNetworkTab:AddColorPicker("OutdoorGradient", {
+EnvironmentNetworkTab:AddLabel("Outdoor Gradient"):AddColorPicker("OutdoorGradient", {
     Default = Color3.fromRGB(255, 255, 255),
     Title = "Outdoor Gradient",
     Text = "Outdoor Gradient",
