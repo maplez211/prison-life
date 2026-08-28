@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.4 | by 2knw",
+    Footer = "Version 0.4.5 | by 2knw",
     Icon = 82328256663699,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -28,6 +28,7 @@ local Window = Library:CreateWindow({
 
 -- ============ TABS ============
 local Tabs = {
+    Info = Window:AddTab("Info", "info", "Player & game info"),
     Aimbot = Window:AddTab("Combat", "crosshair", "Aim settings, targeting and FOV configuration"),
     Visuals = Window:AddTab("Visuals", "eye", "ESP, tracers and visual customization"),
     Teleports = Window:AddTab("Weapons & Shop", "shopping-basket", "Teleports and Weapons"),
@@ -35,6 +36,127 @@ local Tabs = {
 }
 
 Library:SetDPIScale(90)
+
+-- ============ INFO TAB ============
+local scriptStartTime = tick()
+
+local function getGreeting()
+    local hour = tonumber(os.date("%H"))
+    if hour < 12 then
+        return "Good Morning"
+    elseif hour < 18 then
+        return "Good Afternoon"
+    else
+        return "Good Evening"
+    end
+end
+
+local function formatUptime(seconds)
+    local h = math.floor(seconds / 3600)
+    local m = math.floor((seconds % 3600) / 60)
+    local s = math.floor(seconds % 60)
+    return string.format("%dh %dm %ds", h, m, s)
+end
+
+local ProfileBox = Tabs.Info:AddLeftGroupbox("Player & Game Info")
+
+-- Frame customizado: headshot + saudação
+local ProfileFrame = Instance.new("Frame")
+ProfileFrame.Name = "ProfileFrame"
+ProfileFrame.BackgroundTransparency = 1
+ProfileFrame.Size = UDim2.new(1, 0, 0, 90)
+ProfileFrame.Parent = ProfileBox.Container
+
+local HeadshotImage = Instance.new("ImageLabel")
+HeadshotImage.Name = "Headshot"
+HeadshotImage.BackgroundTransparency = 1
+HeadshotImage.Size = UDim2.fromOffset(80, 80)
+HeadshotImage.Position = UDim2.fromOffset(0, 0)
+HeadshotImage.Image = ""
+HeadshotImage.Parent = ProfileFrame
+
+local HeadshotCorner = Instance.new("UICorner")
+HeadshotCorner.CornerRadius = UDim.new(0, 12)
+HeadshotCorner.Parent = HeadshotImage
+
+task.spawn(function()
+    local ok, content = pcall(function()
+        return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+    end)
+    if ok and content then
+        HeadshotImage.Image = content
+    end
+end)
+
+local GreetingLabel = Instance.new("TextLabel")
+GreetingLabel.Name = "GreetingLabel"
+GreetingLabel.BackgroundTransparency = 1
+GreetingLabel.Position = UDim2.fromOffset(92, 2)
+GreetingLabel.Size = UDim2.new(1, -92, 0, 26)
+GreetingLabel.Font = Enum.Font.GothamBold
+GreetingLabel.TextSize = 18
+GreetingLabel.TextXAlignment = Enum.TextXAlignment.Left
+GreetingLabel.TextColor3 = Library.Scheme.TextColor
+GreetingLabel.Text = getGreeting() .. ", " .. player.Name .. "!"
+GreetingLabel.Parent = ProfileFrame
+
+local ExecutorName = "Unknown"
+pcall(function()
+    if identifyexecutor then
+        ExecutorName = identifyexecutor()
+    end
+end)
+
+local InfoDetailsLabel = Instance.new("TextLabel")
+InfoDetailsLabel.Name = "InfoDetailsLabel"
+InfoDetailsLabel.BackgroundTransparency = 1
+InfoDetailsLabel.Position = UDim2.fromOffset(92, 30)
+InfoDetailsLabel.Size = UDim2.new(1, -92, 0, 60)
+InfoDetailsLabel.Font = Enum.Font.Gotham
+InfoDetailsLabel.TextSize = 13
+InfoDetailsLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfoDetailsLabel.TextYAlignment = Enum.TextYAlignment.Top
+InfoDetailsLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+InfoDetailsLabel.RichText = true
+InfoDetailsLabel.Text = "• Executor: " .. ExecutorName .. "\n"
+    .. "• Map: [UPD] Prison Life\n"
+    .. "• Time: " .. os.date("%I:%M %p")
+InfoDetailsLabel.Parent = ProfileFrame
+
+-- ============ UPDATES GROUP ============
+local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates")
+
+UpdatesBox:AddLabel("[UPD] Prison Life")
+UpdatesBox:AddLabel("- Added ForceField Check\n- Added Weapon Sound Packs\n- Added Target Mode (Trespass/Hostile)\n- Reorganized Aim Settings layout")
+
+UpdatesBox:AddDivider("Info")
+
+UpdatesBox:AddButton({
+    Text = "Discord",
+    Func = function()
+        pcall(function()
+            setclipboard("2kayen")
+        end)
+    end,
+})
+
+-- ============ SERVER STATS GROUP ============
+local ServerStatsBox = Tabs.Info:AddRightGroupbox("Server Stats")
+
+local regionCode = "Unknown"
+pcall(function()
+    regionCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(player)
+end)
+
+local ServerStatsLabel = ServerStatsBox:AddLabel("Region: " .. regionCode .. "\nCountry: " .. regionCode .. "\nUptime: " .. formatUptime(tick() - scriptStartTime))
+
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            ServerStatsLabel:SetText("Region: " .. regionCode .. "\nCountry: " .. regionCode .. "\nUptime: " .. formatUptime(tick() - scriptStartTime))
+        end)
+    end
+end)
 
 -- ============ MOBILE BUTTON ============
 if Library.IsMobile then
