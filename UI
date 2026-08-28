@@ -523,14 +523,22 @@ AimbotLeftBox:AddDropdown("TargetMode", {
     end,
 })
 
-AimbotLeftBox:AddDivider()
-
 local targetOptions = {}
 for _, plr in ipairs(Players:GetPlayers()) do
     if plr ~= player then
         table.insert(targetOptions, plr.Name)
     end
 end
+
+AimbotLeftBox:AddDropdown("AimMode", {
+    Values = {"FOV", "Distance"},
+    Default = "FOV",
+    Text = "Targeting Mode",
+    Tooltip = "FOV: Locks on players within FOV radius | Distance: Locks on closest visible player",
+    Callback = function(Value)
+        getgenv().SilentAimSettings.AimMode = Value
+    end,
+})
 
 AimbotLeftBox:AddDropdown("TargetPart", {
     Values = {"Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "HumanoidRootPart"},
