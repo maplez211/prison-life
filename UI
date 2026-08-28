@@ -35,7 +35,7 @@ local Tabs = {
     ["UI Settings"] = Window:AddTab("UI Settings", "settings", "Customize the UI behavior and appearance"),
 }
 
-Library:SetDPIScale(95)
+Library:SetDPIScale(100)
 
 -- ============ INFO TAB ============
 local scriptStartTime = tick()
@@ -63,13 +63,13 @@ local InfoTabRight = Tabs.Info.Sides[2]
 local InfoTabContainer = InfoTabLeft.Parent
 
 local PROFILE_HEIGHT = 110
-local PROFILE_GAP = 8
+local PROFILE_GAP = 10
 
 -- ============ PROFILE PANEL (largura total, sem seta de collapse) ============
 local ProfileHolder = Instance.new("Frame")
 ProfileHolder.Name = "ProfilePanel"
 ProfileHolder.BackgroundColor3 = Library.Scheme.BackgroundColor
-ProfileHolder.Position = UDim2.fromOffset(1, 0)
+ProfileHolder.Position = UDim2.fromOffset(1, 2)
 ProfileHolder.Size = UDim2.new(1, -2, 0, PROFILE_HEIGHT)
 ProfileHolder.Parent = InfoTabContainer
 
@@ -91,11 +91,18 @@ ProfileFrame.Parent = ProfileHolder
 
 local HeadshotImage = Instance.new("ImageLabel")
 HeadshotImage.Name = "Headshot"
-HeadshotImage.BackgroundTransparency = 1
+HeadshotImage.BackgroundColor3 = Library:GetBetterColor(Library.Scheme.BackgroundColor, 8)
+HeadshotImage.BackgroundTransparency = 0
 HeadshotImage.Size = UDim2.fromOffset(80, 80)
 HeadshotImage.Position = UDim2.fromOffset(0, 0)
 HeadshotImage.Image = ""
 HeadshotImage.Parent = ProfileFrame
+
+Library:AddToRegistry(HeadshotImage, {
+    BackgroundColor3 = function()
+        return Library:GetBetterColor(Library.Scheme.BackgroundColor, 8)
+    end,
+})
 
 local HeadshotCorner = Instance.new("UICorner")
 HeadshotCorner.CornerRadius = UDim.new(0, 12)
