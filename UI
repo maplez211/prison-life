@@ -11,11 +11,13 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
+Library.Scheme.AccentColor = Color3.fromRGB(100, 240, 130)
+
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.5 | by 2knw",
-    Icon = 82328256663699,
+    Footer = "Version 0.4.6 | by 2knw",
+    Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
     Size = UDim2.fromOffset(700, 750), 
@@ -24,6 +26,7 @@ local Window = Library:CreateWindow({
     SidebarCompacted = true,
     ShowMobileButtons = false,
     CornerRadius = 10,
+    Font = Enum.Font.Code,
 })
 
 -- ============ TABS ============
@@ -35,7 +38,7 @@ local Tabs = {
     ["UI Settings"] = Window:AddTab("UI Settings", "settings", "Customize the UI behavior and appearance"),
 }
 
-Library:SetDPIScale(100)
+Library:SetDPIScale(95)
 
 -- ============ INFO TAB ============
 local scriptStartTime = tick()
@@ -65,7 +68,7 @@ local InfoTabContainer = InfoTabLeft.Parent
 local PROFILE_HEIGHT = 110
 local PROFILE_GAP = 10
 
--- ============ PROFILE PANEL (largura total, sem seta de collapse) ============
+-- ============ PROFILE PANEL ============
 local ProfileHolder = Instance.new("Frame")
 ProfileHolder.Name = "ProfilePanel"
 ProfileHolder.BackgroundColor3 = Library.Scheme.BackgroundColor
@@ -208,7 +211,7 @@ if Library.IsMobile then
     local CustomToggleButton = Instance.new("ImageButton")
     CustomToggleButton.Name = "CustomToggleButton"
     CustomToggleButton.BackgroundColor3 = Library.Scheme.BackgroundColor
-    CustomToggleButton.Image = "rbxassetid://82328256663699"
+    CustomToggleButton.Image = "rbxassetid://96742689768149"
     CustomToggleButton.ScaleType = Enum.ScaleType.Fit
     CustomToggleButton.Size = UDim2.fromOffset(40, 40)
     CustomToggleButton.Position = UDim2.fromOffset(6, 6)
@@ -514,7 +517,7 @@ AimbotLeftBox:AddDropdown("TargetMode", {
         lastTargetModeSelection = finalValue
 
         getgenv().SilentAimSettings.TrespassCheck = finalValue["🔗 Trespass"] == true
-        getgenv().SilentAimSettings.HostileCheck = finalValue["💢 Hostile"] == true
+        getgenv().SilentAimSettings.HostileCheck = finalValue["?? Hostile"] == true
 
         Options.TargetMode:SetValue(finalValue)
     end,
@@ -639,22 +642,17 @@ AimbotMidBox:AddSlider("HitChance", {
 
 -- ============ FOV SECTION ============
 local FOVBox = Tabs.Aimbot:AddGroupbox({
-    Name = "FOV",
+    Name = "Settings",
     Side = "Right",
 })
 
-FOVBox:AddSlider("FOVSize", {
-    Text = "FOV Size",
-    Default = 100,
-    Min = 30,
-    Max = 500,
-    Rounding = 0,
-    Callback = function(Value)
-        getgenv().SilentAimSettings.FOVRadius = Value
+FOVBox:AddToggle("HideFOV", {
+    Text = "Show FOV Circle",
+    Default = true,
+    Callback = function(v)
+        toggleFOVCircle(not v)
     end,
-})
-
-FOVBox:AddLabel("FOV Color"):AddColorPicker("FOVColor", {
+}):AddColorPicker("FOVColor", {
     Default = Color3.fromRGB(255, 255, 255),
     Title = "FOV Color",
     Text = "FOV Color",
@@ -664,11 +662,14 @@ FOVBox:AddLabel("FOV Color"):AddColorPicker("FOVColor", {
     end,
 })
 
-FOVBox:AddToggle("HideFOV", {
-    Text = "Hide FOV Circle",
-    Default = false,
-    Callback = function(v)
-        toggleFOVCircle(v)
+FOVBox:AddSlider("FOVSize", {
+    Text = "FOV Circle Radius",
+    Default = 100,
+    Min = 30,
+    Max = 500,
+    Rounding = 0,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.FOVRadius = Value
     end,
 })
 
