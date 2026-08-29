@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.9 | by 2knw",
+    Footer = "Version 0.5.0 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -798,19 +798,42 @@ local WeaponModsTabbox = WeaponModBox:AddTabbox()
 
 local GunModTab = WeaponModsTabbox:AddTab(nil, "wrench")
 
-GunModTab:AddToggle("EnableGunMod", {
-    Text = "Enable Gun Mod",
+GunModTab:AddToggle("WeaponMod", {
+    Text = "Weapon Mod",
     Default = false,
     Callback = function(v)
-        getgenv().SilentAimSettings.GunModEnabled = v
+        getgenv().SetGunModEnabled(v)
     end,
 })
+
+GunModTab:AddDivider()
 
 GunModTab:AddToggle("AutoFire", {
     Text = "Auto Fire",
     Default = false,
     Callback = function(v)
-        getgenv().SilentAimSettings.AutoFire = v
+        getgenv().SetGunModAutoFire(v)
+    end,
+})
+
+GunModTab:AddToggle("FastFirerate", {
+    Text = "Fast Firerate",
+    Default = false,
+    Callback = function(v)
+        getgenv().SetGunModFastFirerate(v)
+    end,
+})
+
+GunModTab:AddDivider("Custom Values")
+
+GunModTab:AddSlider("FireRateValue", {
+    Text = "Fire Rate",
+    Default = 0.01,
+    Min = 0.01,
+    Max = 0.1,
+    Rounding = 2,
+    Callback = function(Value)
+        getgenv().SetGunModFireRate(Value)
     end,
 })
 
