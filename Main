@@ -1117,7 +1117,7 @@ getgenv().SetGunModFireRate = function(v)
     end
 end
 
--- ============ WEAPON SKIN (COLOR/MATERIAL/TRANSPARENCY) ============
+-- ============ WEAPON SKIN ============
 local SkinSettings = {
     Enabled = false,
     Color = Color3.fromRGB(255, 255, 255),
@@ -1127,6 +1127,7 @@ local SkinSettings = {
 
 local originalPartProps = {}
 local skinToolNames = {"AK-47", "Remington 870", "M9", "M700", "M4A1", "FAL", "MP5", "Revolver"}
+local excludedPartNames = {"Handle", "Muzzle"}
 
 local materialMap = {
     ForceField = Enum.Material.ForceField,
@@ -1139,11 +1140,12 @@ local materialMap = {
 
 local function storeOriginalProps(tool)
     for _, part in ipairs(tool:GetDescendants()) do
-        if part:IsA("BasePart") and not originalPartProps[part] then
+        if part:IsA("BasePart") and not table.find(excludedPartNames, part.Name) and not originalPartProps[part] then
             originalPartProps[part] = {
                 Color = part.Color,
                 Material = part.Material,
                 Transparency = part.Transparency,
+                TextureID = part:IsA("MeshPart") and part.TextureID or nil,
             }
         end
     end
@@ -1156,17 +1158,25 @@ local function applyWeaponSkin(tool)
     storeOriginalProps(tool)
 
     for _, part in ipairs(tool:GetDescendants()) do
-        if part:IsA("BasePart") then
+        if part:IsA("BasePart") and not table.find(excludedPartNames, part.Name) then
             if SkinSettings.Enabled then
                 part.Color = SkinSettings.Color
                 part.Material = SkinSettings.Material
                 part.Transparency = SkinSettings.Transparency
+
+                if part:IsA("MeshPart") then
+                    part.TextureID = ""
+                end
             else
                 local orig = originalPartProps[part]
                 if orig then
                     part.Color = orig.Color
                     part.Material = orig.Material
                     part.Transparency = orig.Transparency
+
+                    if part:IsA("MeshPart") and orig.TextureID then
+                        part.TextureID = orig.TextureID
+                    end
                 end
             end
         end
