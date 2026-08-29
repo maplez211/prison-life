@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.1 | by 2knw",
+    Footer = "Version 0.5.2 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -175,7 +175,7 @@ end
 local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates", "bell")
 
 UpdatesBox:AddLabel("Prison Life", true)
-UpdatesBox:AddLabel("- Added Weapon Mods\n- Added Hitbox Expander", true)
+UpdatesBox:AddLabel("- Added Weapons Colors", true)
 
 UpdatesBox:AddDivider("Info")
 
@@ -912,6 +912,46 @@ ChainTab:AddLabel("Bullet Color"):AddColorPicker("BulletColor", {
 })
 
 local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
+PaintTab:AddToggle("EnableWeaponColor", {
+    Text = "Enable Weapon Color",
+    Default = false,
+    Callback = function(v)
+        getgenv().SetWeaponColorEnabled(v)
+    end,
+}):AddColorPicker("WeaponColor", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "Weapon Color",
+    Text = "Weapon Color",
+    Tooltip = "Sets the color of your weapon",
+    Callback = function(Value)
+        getgenv().SetWeaponColorRGB(Value)
+    end,
+})
+
+PaintTab:AddDivider()
+
+PaintTab:AddSlider("WeaponTransparency", {
+    Text = "Weapon Transparency",
+    Default = 0,
+    Min = 0,
+    Max = 1,
+    Rounding = 1,
+    Callback = function(Value)
+        getgenv().SetWeaponTransparency(Value)
+    end,
+})
+
+PaintTab:AddDropdown("WeaponMaterial", {
+    Values = {"ForceField", "SmoothPlastic", "DiamondPlate", "Metal", "Marble", "Neon"},
+    Default = "SmoothPlastic",
+    Text = "Weapon Material",
+    Tooltip = "Sets the material of your weapon",
+    Callback = function(Value)
+        getgenv().SetWeaponMaterial(Value)
+    end,
+})
+
+
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
 SoundTab:AddDropdown("WeaponSoundPack", {
