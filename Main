@@ -234,26 +234,12 @@ local function isVisible(targetCharacter)
     local origin = camera.CFrame.Position
     local direction = hrp.Position - origin
 
-    local ignoreList = {player.Character, targetCharacter}
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Blacklist
-    params.FilterDescendantsInstances = ignoreList
+    params.FilterDescendantsInstances = {player.Character, targetCharacter}
 
-    for i = 1, 10 do
-        local result = Workspace:Raycast(origin, direction, params)
-        if not result then
-            return true
-        end
-
-        if result.Instance:IsA("BasePart") and result.Instance.Transparency >= 0.001 then
-            table.insert(ignoreList, result.Instance)
-            params.FilterDescendantsInstances = ignoreList
-        else
-            return false
-        end
-    end
-
-    return false
+    local result = Workspace:Raycast(origin, direction, params)
+    return result == nil
 end
 
 local function isValidTarget(plr)
@@ -290,7 +276,7 @@ local function isValidTarget(plr)
         end
     end
 
-    if Settings.VisibleCheck then
+    if Settings.VisibleCheck and not Settings.HitboxExpanderEnabled then
         if not isVisible(plr.Character) then return false end
     end
 
@@ -1128,6 +1114,123 @@ getgenv().SetGunModFireRate = function(v)
     Settings.FireRateValue = v
     if Settings.FastFirerateEnabled then
         applyGunModToAllTools()
+    end
+end
+
+-- ============ WEAPON SKIN (COLOR/MATERIAL/TRANSPARENCY) ============
+local SkinSettings = {
+    Enabled = false,
+    Color = Color3.fromRGB(255, 255, 255),
+    Transparency = 0,
+    Material = Enum.Material.SmoothPlastic,
+}
+
+local originalPartProps = {}
+local skinToolNames = {"AK-47", "Remington 870", "M9", "M700", "M4A1", "FAL", "MP5", "Revolver"}
+
+local materialMap = {
+    ForceField = Enum.Material.ForceField,
+    SmoothPlastic = Enum.Material.SmoothPlastic,
+    DiamondPlate = Enum.Material.DiamondPlate,
+    Metal = Enum.Material.Metal,
+    Marble = Enum.Material.Marble,
+    Neon = Enum.Material.Neon,
+}
+
+local function storeOriginalProps(tool)
+    for _, part in ipairs(tool:GetDescendants()) do
+        if part:IsA("BasePart") and not originalPartProps[part] then
+            originalPartProps[part] = {
+                Color = part.Color,
+                Material = part.Material,
+                Transparency = part.Transparency,
+            }
+        end
+    end
+end
+
+local function applyWeaponSkin(tool)
+    if not tool or not tool:IsA("Tool") then return end
+    if not table.find(skinToolNames, tool.Name) then return end
+
+    storeOriginalProps(tool)
+
+    for _, part in ipairs(tool:GetDescendants()) do
+        if part:IsA("BasePart") then
+            if SkinSettings.Enabled then
+                part.Color = SkinSettings.Color
+                part.Material = SkinSettings.Material
+                part.Transparency = SkinSettings.Transparency
+            else
+                local orig = originalPartProps[part]
+                if orig then
+                    part.Color = orig.Color
+                    part.Material = orig.Material
+                    part.Transparency = orig.Transparency
+                end
+            end
+        end
+    end
+end
+
+local function applyWeaponSkinToAllTools()
+    local char = player.Character
+    if char then
+        for _, tool in ipairs(char:GetChildren()) do
+            applyWeaponSkin(tool)
+        end
+    end
+
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            applyWeaponSkin(tool)
+        end
+    end
+end
+
+local function hookSkinContainer(container)
+    if not container then return end
+    container.ChildAdded:Connect(function(child)
+        task.wait(0.05)
+        applyWeaponSkin(child)
+    end)
+end
+
+hookSkinContainer(player:FindFirstChild("Backpack"))
+if player.Character then
+    hookSkinContainer(player.Character)
+end
+
+player.CharacterAdded:Connect(function(char)
+    hookSkinContainer(char)
+    task.wait(0.3)
+    applyWeaponSkinToAllTools()
+end)
+
+getgenv().SetWeaponColorEnabled = function(v)
+    SkinSettings.Enabled = v == true
+    applyWeaponSkinToAllTools()
+end
+
+getgenv().SetWeaponColorRGB = function(v)
+    SkinSettings.Color = v
+    if SkinSettings.Enabled then
+        applyWeaponSkinToAllTools()
+    end
+end
+
+getgenv().SetWeaponTransparency = function(v)
+    SkinSettings.Transparency = v
+    if SkinSettings.Enabled then
+        applyWeaponSkinToAllTools()
+    end
+end
+
+getgenv().SetWeaponMaterial = function(v)
+    SkinSettings.Material = materialMap[v] or Enum.Material.SmoothPlastic
+    if SkinSettings.Enabled then
+        applyWeaponSkinToAllTools()
     end
 end
 
