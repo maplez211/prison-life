@@ -43,7 +43,11 @@ getgenv().SilentAimSettings = {
     CameraFOV = 70,
     TargetOnPlayer = {},
     IgnoreTargets = {},
-    AimMode = "FOV"  
+    AimMode = "FOV",
+    GunModEnabled = false,
+    AutoFire = false,
+    FastFirerateEnabled = false,
+    FireRateValue = 0.01,
 }
 
 local Settings = getgenv().SilentAimSettings
@@ -970,6 +974,95 @@ pcall(function()
         part.Parent = workspace.CurrentCamera
     end
 end)
+
+-- ============ WEAPON MOD (GUN MOD) ============
+local ToolPropertiesFolder = nil
+pcall(function()
+    ToolPropertiesFolder = game:GetService("ReplicatedStorage"):WaitForChild("SharedModules", 5):WaitForChild("ToolProperties", 5)
+end)
+
+local gunModNames = {"AK-47", "Remington 870", "M9", "M700", "M4A1", "FAL", "MP5", "Revolver"}
+
+local function applyGunMod(tool)
+    if not tool or not tool:IsA("Tool") then return end
+    if not table.find(gunModNames, tool.Name) then return end
+    if not Settings.GunModEnabled then return end
+
+    tool:SetAttribute("AutoFire", Settings.AutoFire == true)
+
+    if Settings.FastFirerateEnabled then
+        local rate = Settings.FireRateValue or 0.01
+        tool:SetAttribute("FireRate", rate)
+
+        if ToolPropertiesFolder then
+            pcall(function()
+                local moduleScript = ToolPropertiesFolder:FindFirstChild(tool.Name)
+                if moduleScript then
+                    local props = require(moduleScript)
+                    props.FireRate = rate
+                    props.AutoFire = Settings.AutoFire == true
+                end
+            end)
+        end
+    end
+end
+
+local function applyGunModToAllTools()
+    local char = player.Character
+    if char then
+        for _, tool in ipairs(char:GetChildren()) do
+            applyGunMod(tool)
+        end
+    end
+
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            applyGunMod(tool)
+        end
+    end
+end
+
+local function hookGunModContainer(container)
+    if not container then return end
+    container.ChildAdded:Connect(function(child)
+        task.wait(0.05)
+        applyGunMod(child)
+    end)
+end
+
+hookGunModContainer(player:FindFirstChild("Backpack"))
+if player.Character then
+    hookGunModContainer(player.Character)
+end
+
+player.CharacterAdded:Connect(function(char)
+    hookGunModContainer(char)
+    task.wait(0.3)
+    applyGunModToAllTools()
+end)
+
+getgenv().SetGunModEnabled = function(v)
+    Settings.GunModEnabled = v == true
+    applyGunModToAllTools()
+end
+
+getgenv().SetGunModAutoFire = function(v)
+    Settings.AutoFire = v == true
+    applyGunModToAllTools()
+end
+
+getgenv().SetGunModFastFirerate = function(v)
+    Settings.FastFirerateEnabled = v == true
+    applyGunModToAllTools()
+end
+
+getgenv().SetGunModFireRate = function(v)
+    Settings.FireRateValue = v
+    if Settings.FastFirerateEnabled then
+        applyGunModToAllTools()
+    end
+end
 
 -- ============ ESP ============
 function applyESP(plr)
