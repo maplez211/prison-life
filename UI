@@ -656,11 +656,8 @@ AimbotLeftBox:AddDropdown("TargetPart", {
 })
 
 -- ============ HITBOX EXPANDER ============
-local HitboxExpanderBox = Tabs.Aimbot:AddLeftGroupbox({
-    Name = "Hitbox Expander",
-    Description = "Enlarger player hitboxes",
-    IconName = "maximize-2",
-})
+local HitboxExpanderBox = Tabs.Aimbot:AddLeftGroupbox("Hitbox Expander", "maximize-2")
+HitboxExpanderBox:SetDescription("Enlarges player hitboxes")
 
 HitboxExpanderBox:AddToggle("EnableHitboxExpander", {
     Text = "Enable Hitbox Expander",
