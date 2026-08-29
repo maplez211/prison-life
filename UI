@@ -175,7 +175,7 @@ end
 local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates", "bell")
 
 UpdatesBox:AddLabel("Prison Life", true)
-UpdatesBox:AddLabel("- Many UI Changes\n- Ignore Player Fixed\n- Reorganized FOV Group", true)
+UpdatesBox:AddLabel("- Added Bullet Color Changer\n- Some UI Changes\n- Customization Group Removed/n- Added Gradient Color and Outdoor Ambient Changer", true)
 
 UpdatesBox:AddDivider("Info")
 
@@ -793,7 +793,8 @@ FOVUsersTab:AddButton({
 })
 
 -- ============ WEAPON MODIFICATIONS (TABBOX) ============
-local WeaponModsTabbox = Tabs.Aimbot:AddRightTabbox("Weapon Modifications")
+local WeaponModBox = Tabs.Aimbot:AddRightGroupbox("Weapon Mod", "sword")
+local WeaponModsTabbox = WeaponModBox:AddTabbox()
 
 local GunModTab = WeaponModsTabbox:AddTab(nil, "wrench")
 
@@ -813,7 +814,29 @@ GunModTab:AddToggle("AutoFire", {
     end,
 })
 
-local ChainTab = WeaponModsTabbox:AddTab(nil, "git-commit")
+local ChainTab = WeaponModsTabbox:AddTab(nil, "cable")
+
+ChainTab:AddToggle("CustomBulletColor", {
+    Text = "Custom Bullet Color",
+    Tooltip = "Applies a custom color to all bullets, current and future weapons",
+    Default = false,
+    Callback = function(v)
+        setCustomBulletColorEnabled(v)
+    end,
+})
+
+ChainTab:AddDivider()
+
+ChainTab:AddLabel("Bullet Color"):AddColorPicker("BulletColor", {
+    Default = Color3.fromRGB(255, 255, 0),
+    Title = "Bullet Color",
+    Text = "Bullet Color",
+    Tooltip = "Sets the color of all bullets when enabled",
+    Callback = function(Value)
+        setBulletColorRGB(Value)
+    end,
+})
+
 local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
@@ -940,6 +963,7 @@ ClampColorPickerToScreen("FOVColor")
 ClampColorPickerToScreen("ESPTargetColor")
 ClampColorPickerToScreen("FogColor")
 ClampColorPickerToScreen("TracerColor")
+ClampColorPickerToScreen("BulletColor")
 
 -- ============ TELEPORTS TAB ============
 local TeleportsBox = Tabs.Teleports:AddRightGroupbox("Teleports", "map-pin")
