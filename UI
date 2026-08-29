@@ -283,7 +283,7 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
 })
 
 -- ============ ENVIRONMENT GROUP ============
-local EnvironmentBox = Tabs.Teleports:AddLeftGroupbox("Environment", "trees")
+local EnvironmentBox = Tabs.Teleports:AddLeftGroupbox("Environment", "tree")
 
 EnvironmentBox:AddLabel("World appearance settings", true)
 
@@ -291,8 +291,12 @@ local EnvironmentTabbox = EnvironmentBox:AddTabbox()
 local EnvironmentNetworkTab = EnvironmentTabbox:AddTab(nil, "globe")
 local EnvironmentCloudTab = EnvironmentTabbox:AddTab(nil, "cloud")
 
--- ---- World Gradient (Network Tab) ----
+-- ============ WORLD GRADIENT ============
 local WorldGradientEnabled = false
+local DefaultAmbient = game:GetService("Lighting").Ambient
+local DefaultOutdoorAmbient = game:GetService("Lighting").OutdoorAmbient
+local CurrentGradientColor = Color3.fromRGB(255, 255, 255)
+local CurrentOutdoorGradient = Color3.fromRGB(255, 255, 255)
 
 EnvironmentNetworkTab:AddToggle("WorldGradient", {
     Text = "World Gradient",
@@ -300,6 +304,13 @@ EnvironmentNetworkTab:AddToggle("WorldGradient", {
     Default = false,
     Callback = function(v)
         WorldGradientEnabled = v
+        if v then
+            game:GetService("Lighting").Ambient = CurrentGradientColor
+            game:GetService("Lighting").OutdoorAmbient = CurrentOutdoorGradient
+        else
+            game:GetService("Lighting").Ambient = DefaultAmbient
+            game:GetService("Lighting").OutdoorAmbient = DefaultOutdoorAmbient
+        end
     end,
 })
 
@@ -309,6 +320,7 @@ EnvironmentNetworkTab:AddLabel("Gradient Color"):AddColorPicker("GradientColor",
     Text = "Gradient Color",
     Tooltip = "Sets the world gradient color",
     Callback = function(Value)
+        CurrentGradientColor = Value
         if WorldGradientEnabled then
             game:GetService("Lighting").Ambient = Value
         end
@@ -321,14 +333,41 @@ EnvironmentNetworkTab:AddLabel("Outdoor Gradient"):AddColorPicker("OutdoorGradie
     Text = "Outdoor Gradient",
     Tooltip = "Sets the outdoor gradient color",
     Callback = function(Value)
+        CurrentOutdoorGradient = Value
         if WorldGradientEnabled then
             game:GetService("Lighting").OutdoorAmbient = Value
         end
     end,
 })
 
--- ---- Custom Skybox ----
+EnvironmentNetworkTab:AddDivider()
+
+EnvironmentNetworkTab:AddToggle("RemoveFog", {
+    Text = "Remove Fog",
+    Tooltip = "Removes the fog from the game",
+    Default = false,
+    Callback = function(v)
+        if v then
+            game:GetService("Lighting").FogEnd = 100000
+            game:GetService("Lighting").FogStart = 100000
+        else
+            game:GetService("Lighting").FogEnd = 5000
+            game:GetService("Lighting").FogStart = 500
+        end
+    end,
+}):AddColorPicker("FogColor", {
+    Default = Color3.fromRGB(100, 100, 100),
+    Title = "Fog Color",
+    Text = "Fog Color",
+    Tooltip = "Choose the fog color",
+    Callback = function(Value)
+        setFogColorRGB(Value)
+    end,
+})
+
+-- ============ CUSTOM SKYBOX ============
 local CustomSkyboxEnabled = false
+local CurrentSkybox = "None"
 
 EnvironmentCloudTab:AddToggle("CustomSkybox", {
     Text = "Custom Skybox",
@@ -336,6 +375,11 @@ EnvironmentCloudTab:AddToggle("CustomSkybox", {
     Default = false,
     Callback = function(v)
         CustomSkyboxEnabled = v
+        if v then
+            setSkybox(CurrentSkybox)
+        else
+            setSkybox("None")
+        end
     end,
 })
 
@@ -345,6 +389,7 @@ EnvironmentCloudTab:AddDropdown("Skyboxes", {
     Text = "Skyboxes",
     Tooltip = "Choose your skybox",
     Callback = function(Value)
+        CurrentSkybox = Value
         if CustomSkyboxEnabled then
             setSkybox(Value)
         end
@@ -821,37 +866,12 @@ local CustomBox = Tabs.Visuals:AddGroupbox({
     Side = "Right",
 })
 
-CustomBox:AddToggle("RemoveFog", {
-    Text = "Remove Fog",
-    Tooltip = "Removes the fog from the game",
-    Default = false,
-    Callback = function(v)
-        if v then
-            game:GetService("Lighting").FogEnd = 100000
-            game:GetService("Lighting").FogStart = 100000
-        else
-            game:GetService("Lighting").FogEnd = 5000
-            game:GetService("Lighting").FogStart = 500
-        end
-    end,
-})
-
 CustomBox:AddToggle("ToggleRain", {
     Text = "Toggle Rain",
     Tooltip = "Makes it rain with sound effect",
     Default = false,
     Callback = function(v)
         toggleRain(v)
-    end,
-})
-
-CustomBox:AddLabel("Fog Color"):AddColorPicker("FogColor", {
-    Default = Color3.fromRGB(100, 100, 100),
-    Title = "Fog Color",
-    Text = "Fog Color",
-    Tooltip = "Choose the fog color",
-    Callback = function(Value)
-        setFogColorRGB(Value)
     end,
 })
 
