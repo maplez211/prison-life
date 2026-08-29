@@ -813,7 +813,7 @@ GunModTab:AddToggle("AutoFire", {
     end,
 })
 
-local ChainTab = WeaponModsTabbox:AddTab(nil, "cable")
+local ChainTab = WeaponModsTabbox:AddTab(nil, "git-commit")
 local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
