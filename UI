@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.0 | by 2knw",
+    Footer = "Version 0.5.1 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -153,7 +153,7 @@ InfoDetailsLabel.TextYAlignment = Enum.TextYAlignment.Top
 InfoDetailsLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 InfoDetailsLabel.RichText = true
 InfoDetailsLabel.Text = "• Executor: " .. ExecutorName .. "\n"
-    .. "• Map: [UPD] Prison Life\n"
+    .. "• Map: Prison Life\n"
     .. "• Time: " .. os.date("%I:%M %p")
 InfoDetailsLabel.Parent = ProfileFrame
 
@@ -175,7 +175,7 @@ end
 local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates", "bell")
 
 UpdatesBox:AddLabel("Prison Life", true)
-UpdatesBox:AddLabel("- Added Bullet Color Changer\n- Some UI Changes\n- Customization Group Removed/n- Added Gradient Color and Outdoor Ambient Changer", true)
+UpdatesBox:AddLabel("- Added Weapon Mods\n- Added Hitbox Expander", true)
 
 UpdatesBox:AddDivider("Info")
 
@@ -652,6 +652,60 @@ AimbotLeftBox:AddDropdown("TargetPart", {
     Tooltip = "Choose which body part the Silent Aim will lock onto",
     Callback = function(Value)
         getgenv().SilentAimSettings.TargetPart = Value
+    end,
+})
+
+-- ============ HITBOX EXPANDER ============
+local HitboxExpanderBox = Tabs.Aimbot:AddLeftGroupbox({
+    Name = "Hitbox Expander",
+    Description = "Enlarger player hitboxes",
+    IconName = "maximize-2",
+})
+
+HitboxExpanderBox:AddToggle("EnableHitboxExpander", {
+    Text = "Enable Hitbox Expander",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.HitboxExpanderEnabled = v
+    end,
+})
+
+HitboxExpanderBox:AddToggle("HitboxTeamCheck", {
+    Text = "Team Check",
+    Default = true,
+    Callback = function(v)
+        getgenv().SilentAimSettings.HitboxTeamCheck = v
+    end,
+})
+
+HitboxExpanderBox:AddSlider("HitboxSize", {
+    Text = "Hitbox Size",
+    Default = 1,
+    Min = 1,
+    Max = 15,
+    Rounding = 0,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.HitboxSize = Value
+    end,
+})
+
+HitboxExpanderBox:AddSlider("HitboxTransparency", {
+    Text = "Hitbox Transparency",
+    Default = 0.5,
+    Min = 0,
+    Max = 1,
+    Rounding = 1,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.HitboxTransparency = Value
+    end,
+})
+
+HitboxExpanderBox:AddDropdown("HitboxShape", {
+    Values = {"Box", "Ball"},
+    Default = "Box",
+    Text = "Hitbox Shape",
+    Callback = function(Value)
+        getgenv().SilentAimSettings.HitboxShape = Value
     end,
 })
 
