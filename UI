@@ -11,12 +11,12 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-Library.Scheme.AccentColor = Color3.fromRGB(140, 40, 40)
+Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.4.8 | by 2knw",
+    Footer = "Version 0.4.9 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -26,7 +26,7 @@ local Window = Library:CreateWindow({
     SidebarCompacted = true,
     ShowMobileButtons = false,
     CornerRadius = 10,
-    Font = Enum.Font.Code,
+    Font = Enum.Font.Gotham,
 })
 
 -- ============ TABS ============
@@ -283,7 +283,7 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
 })
 
 -- ============ ENVIRONMENT GROUP ============
-local EnvironmentBox = Tabs.Teleports:AddLeftGroupbox("Environment", "tree")
+local EnvironmentBox = Tabs.Teleports:AddLeftGroupbox("Environment", "trees")
 
 EnvironmentBox:AddLabel("World appearance settings", true)
 
@@ -813,7 +813,7 @@ GunModTab:AddToggle("AutoFire", {
     end,
 })
 
-local ChainTab = WeaponModsTabbox:AddTab(nil, "link")
+local ChainTab = WeaponModsTabbox:AddTab(nil, "cable")
 local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
@@ -859,24 +859,8 @@ VisualsLeftBox:AddToggle("HideESPNames", {
     end,
 })
 
--- ============ CUSTOMIZATION ============
-local CustomBox = Tabs.Visuals:AddGroupbox({
-    Name = "Customization",
-    Icon = "palette",
-    Side = "Right",
-})
-
-CustomBox:AddToggle("ToggleRain", {
-    Text = "Toggle Rain",
-    Tooltip = "Makes it rain with sound effect",
-    Default = false,
-    Callback = function(v)
-        toggleRain(v)
-    end,
-})
-
 -- ============ TRACER ESP SECTION ============
-local TracerBox = Tabs.Visuals:AddLeftGroupbox("Tracer ESP", "zap")
+local TracerBox = Tabs.Visuals:AddRightGroupbox("Tracer ESP", "zap")
 
 TracerBox:AddToggle("TracerESP", {
     Text = "Tracer ESP",
