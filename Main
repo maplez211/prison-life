@@ -48,6 +48,11 @@ getgenv().SilentAimSettings = {
     AutoFire = false,
     FastFirerateEnabled = false,
     FireRateValue = 0.01,
+    HitboxExpanderEnabled = false,
+    HitboxTeamCheck = true,
+    HitboxSize = 1,
+    HitboxTransparency = 0.5,
+    HitboxShape = "Box",
 }
 
 local Settings = getgenv().SilentAimSettings
@@ -756,6 +761,68 @@ RunService.RenderStepped:Connect(function()
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
         if hrp then
             hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(Settings.SpinbotSpeed), 0)
+        end
+    end
+end)
+
+-- ============ HITBOX EXPANDER ============
+local hitboxModified = {}
+
+local function resetHitbox(hrp)
+    if not hrp or not hrp.Parent then return end
+    hrp.Size = Vector3.new(2, 2, 1)
+    hrp.Transparency = 1
+    hrp.CanCollide = false
+    hrp.Material = Enum.Material.Plastic
+    hrp.Shape = Enum.PartType.Block
+end
+
+local function applyHitbox(plr)
+    if plr == player then return end
+    local char = plr.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    if Settings.HitboxTeamCheck and player.Team and plr.Team == player.Team then
+        if hitboxModified[hrp] then
+            resetHitbox(hrp)
+            hitboxModified[hrp] = nil
+        end
+        return
+    end
+
+    local size = Settings.HitboxSize or 1
+    hrp.Size = Vector3.new(size, size, size)
+    hrp.Transparency = Settings.HitboxTransparency or 0.5
+    hrp.CanCollide = false
+    hrp.Material = Enum.Material.ForceField
+    hrp.Shape = (Settings.HitboxShape == "Ball") and Enum.PartType.Ball or Enum.PartType.Block
+
+    hitboxModified[hrp] = true
+end
+
+RunService.Heartbeat:Connect(function()
+    if not Settings.HitboxExpanderEnabled then
+        for hrp in pairs(hitboxModified) do
+            resetHitbox(hrp)
+        end
+        table.clear(hitboxModified)
+        return
+    end
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            applyHitbox(plr)
+        end
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    if plr.Character then
+        local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hitboxModified[hrp] = nil
         end
     end
 end)
