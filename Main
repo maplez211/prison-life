@@ -842,10 +842,8 @@ gunSwitchButton.Size = UDim2.fromOffset(40, 40)
 gunSwitchButton.Position = UDim2.fromOffset(6, 52)
 gunSwitchButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 gunSwitchButton.Text = ""
-gunSwitchButton.ZIndex = 10
+gunSwitchButton.ZIndex = 100
 gunSwitchButton.Visible = Settings.ShowGunSwitchButton
-gunSwitchButton.Active = true
-gunSwitchButton.Draggable = true
 gunSwitchButton.Parent = screenGui
 
 gunSwitchButton.MouseButton1Click:Connect(function()
