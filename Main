@@ -91,7 +91,7 @@ function toggleForceFieldCheck(enabled)
     Settings.ForceFieldCheck = enabled
 end
 
--- ============ TRACER BEAM SYSTEM (um beam por player) ============
+-- ============ TRACER BEAM SYSTEM ============
 local tracerBeams = {}
 
 local function removeTracerBeam(plr)
@@ -372,7 +372,6 @@ local function getClosestTarget()
         return closest
     end
     
-    -- Modo padrão "FOV" - seleciona dentro do FOV
     for _, plr in ipairs(Players:GetPlayers()) do
         if isValidTarget(plr) then
             local part = plr.Character:FindFirstChild(Settings.TargetPart) or plr.Character:FindFirstChild("HumanoidRootPart")
@@ -413,6 +412,7 @@ local function updateFOVPosition()
 end
 
 -- ============ SILENT AIM HOOK ============
+-- Silent Aim Method by 7zz
 local ExpectedArguments = {
     FindPartOnRayWithIgnoreList = {
         ArgCountRequired = 3,
@@ -449,36 +449,53 @@ local function ValidateArguments(Args, RayMethod)
     return Matches >= RayMethod.ArgCountRequired
 end
 
+local function getSilentAimEquippedWeapon()
+    local char = player.Character
+    if not char then return nil end
+    for _, child in ipairs(char:GetChildren()) do
+        if child:IsA("Tool") then
+            return child
+        end
+    end
+    return nil
+end
+
 local function getSpreadDirection(Origin, OriginalDirection, HitPart)
-    if typeof(HitPart) ~= "Instance" or not HitPart.Parent then 
-        return OriginalDirection 
-    end
-    
-    local OriginalDistance = OriginalDirection.Magnitude
-    if OriginalDistance == 0 then OriginalDistance = 1000 end
-    
-    local PartSize = HitPart.Size
-    local SpreadX = (math.random() - 0.5) * (PartSize.X + 2) * 0.2
-    local SpreadY = (math.random() - 0.5) * (PartSize.Y + 2) * 0.2
-    local SpreadZ = (math.random() - 0.5) * (PartSize.Z + 2) * 0.2
-    
-    local RandomOffset = Vector3.new(SpreadX, SpreadY, SpreadZ)
-    if RandomOffset.Magnitude == 0 then
-        RandomOffset = Vector3.new(0.1, 0.1, 0.1)
-    end
-    
-    local BasePosition = smoothedTargetPosition or HitPart.Position
-    local TargetPosition = BasePosition + RandomOffset
-    
-    local NewDirection = (TargetPosition - Origin)
-    local NewDistance = NewDirection.Magnitude
-    
-    if NewDistance == 0 then
+    if typeof(HitPart) ~= "Instance" or not HitPart.Parent then
         return OriginalDirection
     end
-    
-    local FinalDistance = math.max(OriginalDistance, NewDistance)
-    return NewDirection.Unit * FinalDistance
+
+    local weapon = getSilentAimEquippedWeapon()
+    local spreadRadius = 0
+    local behavior = nil
+    local range = OriginalDirection.Magnitude
+
+    if weapon then
+        spreadRadius = weapon:GetAttribute("SpreadRadius") or 0
+        behavior = weapon:GetAttribute("Behavior")
+        range = weapon:GetAttribute("Range") or range
+    end
+
+    local targetPosition = smoothedTargetPosition or HitPart.Position
+
+    if spreadRadius <= 0 then
+        local direction = (targetPosition - Origin)
+        if direction.Magnitude == 0 then
+            return OriginalDirection
+        end
+        return direction.Unit * range
+    end
+
+    local randomFactor = math.random()
+    if behavior == "Sniper" or behavior == "Shotgun" then
+        randomFactor = math.sqrt(randomFactor)
+    end
+
+    local rollAngle = 360 - 720 * math.random()
+    local aimCFrame = CFrame.new(Origin, targetPosition)
+    local finalCFrame = aimCFrame * CFrame.Angles(0, 0, math.rad(rollAngle)) * CFrame.Angles(0, randomFactor * spreadRadius, 0)
+
+    return finalCFrame.LookVector * range
 end
 
 local function getRedirectedDirection(Origin, OriginalDirection)
@@ -750,6 +767,60 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
+
+-- ============ ANTI-TASE ============
+-- Method by IsaTheNoob
+local antiTaseEnabled = false
+local antiTaseConnection = nil
+
+local function startAntiTase()
+    if antiTaseConnection then return end
+
+    antiTaseConnection = task.spawn(function()
+        local remote = nil
+        pcall(function()
+            remote = ReplicatedStorage:WaitForChild("GunRemotes", 5):WaitForChild("PlayerTased", 5)
+        end)
+
+        while antiTaseEnabled do
+            if remote then
+                local ok, connections = pcall(getconnections, remote.OnClientEvent)
+                if ok then
+                    for _, conn in connections do
+                        conn:Disable()
+                    end
+                end
+            end
+            task.wait(0.5)
+        end
+    end)
+end
+
+local function stopAntiTase()
+    antiTaseEnabled = false
+    if antiTaseConnection then
+        antiTaseConnection = nil
+    end
+
+    pcall(function()
+        local remote = ReplicatedStorage:WaitForChild("GunRemotes", 5):WaitForChild("PlayerTased", 5)
+        local ok, connections = pcall(getconnections, remote.OnClientEvent)
+        if ok then
+            for _, conn in connections do
+                conn:Enable()
+            end
+        end
+    end)
+end
+
+function setAntiTaseEnabled(enabled)
+    antiTaseEnabled = enabled
+    if enabled then
+        startAntiTase()
+    else
+        stopAntiTase()
+    end
+end
 
 -- ============ HITBOX EXPANDER ============
 local hitboxModified = {}
