@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.5 | by 2knw",
+    Footer = "Version 0.5.6 | by 2knw",
     Icon = 74169651953690,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -175,7 +175,7 @@ end
 local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates", "bell")
 
 UpdatesBox:AddLabel("Prison Life", true)
-UpdatesBox:AddLabel("- Remade custom Shot\n- Added Kill sound\n- Added Teleport to Player tab/n- Added anti-tase", true)
+UpdatesBox:AddLabel("- Remade custom Shot\n- Added Kill sound\n- Added Teleport to Player tab/n- Anti-tase fixed/n- Added Gun Switcher", true)
 
 UpdatesBox:AddDivider("Info")
 
@@ -807,6 +807,40 @@ FOVUsersTab:AddButton({
         end
         Options.IgnoreTarget:SetValues(newOptions)
         Options.IgnoreTarget:SetValue({})
+    end,
+})
+
+-- ============ GUN SWITCHER ============
+local GunSwitcherBox = Tabs.Aimbot:AddRightGroupbox("Gun Switcher", "repeat")
+
+GunSwitcherBox:AddDropdown("SelectGunsToSwitch", {
+    Values = {"M9", "Revolver", "MP5", "AK-47", "M4A1", "FAL", "Remington 870", "M700"},
+    Multi = true,
+    Text = "Select Guns to Switch",
+    Tooltip = "Choose which guns to cycle through",
+    Callback = function(Value)
+        getgenv().SilentAimSettings.GunSwitchList = Value or {}
+    end,
+})
+
+GunSwitcherBox:AddSlider("SwitchDelay", {
+    Text = "Switch Delay",
+    Default = 0.01,
+    Min = 0.01,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(Value)
+        getgenv().SilentAimSettings.GunSwitchDelay = Value
+    end,
+})
+
+GunSwitcherBox:AddDivider()
+
+GunSwitcherBox:AddToggle("ShowGunSwitchButton", {
+    Text = "Show Gun Switch Button",
+    Default = false,
+    Callback = function(v)
+        getgenv().SilentAimSettings.ShowGunSwitchButton = v
     end,
 })
 
