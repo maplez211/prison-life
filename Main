@@ -869,7 +869,6 @@ gunSwitchStroke.Parent = gunSwitchButton
 
 gunSwitchButton.MouseButton1Click:Connect(function()
     Settings.GunSwitchEnabled = not Settings.GunSwitchEnabled
-    gunSwitchButton.BackgroundColor3 = Settings.GunSwitchEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(30, 30, 30)
 end)
 
 RunService.RenderStepped:Connect(function()
