@@ -838,16 +838,42 @@ end)
 
 local gunSwitchButton = Instance.new("TextButton")
 gunSwitchButton.Name = "GunSwitchButton"
-gunSwitchButton.Size = UDim2.fromOffset(40, 40)
+gunSwitchButton.Size = UDim2.fromOffset(120, 40)
 gunSwitchButton.Position = UDim2.fromOffset(6, 52)
 gunSwitchButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-gunSwitchButton.Text = ""
-gunSwitchButton.ZIndex = 100
+gunSwitchButton.Text = "Fast Switch: OFF"
+gunSwitchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+gunSwitchButton.Font = Enum.Font.Gotham
+gunSwitchButton.TextSize = 14
+gunSwitchButton.ZIndex = 10
 gunSwitchButton.Visible = Settings.ShowGunSwitchButton
 gunSwitchButton.Parent = screenGui
 
+local gunSwitchButtonCorner = Instance.new("UICorner")
+gunSwitchButtonCorner.CornerRadius = UDim.new(0, 10)
+gunSwitchButtonCorner.Parent = gunSwitchButton
+
+local gunSwitchButtonStroke = Instance.new("UIStroke")
+gunSwitchButtonStroke.Color = Color3.fromRGB(70, 70, 70)
+gunSwitchButtonStroke.Thickness = 1
+gunSwitchButtonStroke.Parent = gunSwitchButton
+
 gunSwitchButton.MouseButton1Click:Connect(function()
     Settings.GunSwitchEnabled = not Settings.GunSwitchEnabled
+
+    if Settings.GunSwitchEnabled then
+        gunSwitchButton.Text = "Fast Switch: ON"
+        gunSwitchButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+    else
+        gunSwitchButton.Text = "Fast Switch: OFF"
+        gunSwitchButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+        local char = player.Character
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:UnequipTools()
+        end
+    end
 end)
 
 getgenv().SetShowGunSwitchButton = function(v)
