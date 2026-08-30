@@ -1,4 +1,4 @@
--- Main Script Precision | Prison Life
+-- Main Script Kayen Hub | Prison Life
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -903,12 +903,29 @@ autoShootParams.CollisionGroup = "ClientBullet"
 
 local lastAutoShot = 0
 
+local function castPelletRay(weapon, origin, aimPoint, spreadRadius)
+    local roll = math.random()
+    local behavior = weapon:GetAttribute("Behavior")
+    if behavior == "Sniper" or behavior == "Shotgun" then
+        roll = math.sqrt(roll)
+    end
+
+    local range = weapon:GetAttribute("Range") or 1000
+    local lookCFrame = CFrame.new(origin, aimPoint)
+    local rollAngle = 360 - 720 * math.random()
+    local direction = (lookCFrame * CFrame.Angles(0, 0, math.rad(rollAngle)) * CFrame.Angles(0, roll * spreadRadius, 0)).LookVector * range
+
+    local result = workspace:Raycast(origin, direction, autoShootParams)
+    local hitInstance = result and result.Instance or nil
+    local hitPosition = result and result.Position or (origin + direction)
+    return hitInstance, hitPosition
+end
+
 local function performAutoShot(weapon)
     if not weapon or not shootRemote then return end
     if not currentTarget or not currentTarget.Parent then return end
 
     local behavior = weapon:GetAttribute("Behavior")
-    local range = weapon:GetAttribute("Range") or 1000
     local reloadSession = weapon:GetAttribute("Local_ReloadSession") or 0
     local currentAmmo = weapon:GetAttribute("Local_CurrentAmmo") or 0
 
@@ -922,17 +939,38 @@ local function performAutoShot(weapon)
     local origin = head.Position
     autoShootParams.FilterDescendantsInstances = { char }
 
-    local rawDirection = currentTarget.Position - origin
-    local direction = getRedirectedDirection(origin, rawDirection)
-    if not direction then
-        direction = rawDirection.Unit * range
+    local aimPoint = currentTarget.Position
+    local redirected = getRedirectedDirection(origin, aimPoint - origin)
+    if redirected then
+        aimPoint = origin + redirected
     end
 
-    local result = workspace:Raycast(origin, direction, autoShootParams)
-    local hitInstance = result and result.Instance or nil
-    local hitPosition = result and result.Position or (origin + direction)
+    local projectileCount = weapon:GetAttribute("ProjectileCount") or 1
+    local spreadRadius = weapon:GetAttribute("SpreadRadius") or 0
 
-    shootRemote:FireServer({ { origin, hitPosition, hitInstance } })
+    local muzzle = weapon:FindFirstChild("Muzzle")
+    local muzzlePos = muzzle and muzzle.Position or origin
+
+    local bulletData = {}
+
+    for i = 1, projectileCount do
+        local hitInstance, hitPosition = castPelletRay(weapon, origin, aimPoint, spreadRadius)
+        table.insert(bulletData, { origin, hitPosition, hitInstance })
+
+        if AutoShootGunTracers then
+            pcall(function()
+                if behavior == "Sniper" then
+                    AutoShootGunTracers.createSniper(muzzlePos, hitPosition)
+                elseif behavior == "Taser" then
+                    AutoShootGunTracers.createTaser(muzzlePos, hitPosition)
+                else
+                    AutoShootGunTracers.createBullet(muzzlePos, hitPosition)
+                end
+            end)
+        end
+    end
+
+    shootRemote:FireServer(bulletData)
 
     weapon:SetAttribute("Local_CurrentAmmo", currentAmmo - 1)
 
@@ -958,21 +996,6 @@ local function performAutoShot(weapon)
             end
         end
     end)
-
-    if AutoShootGunTracers then
-        pcall(function()
-            local muzzle = weapon:FindFirstChild("Muzzle")
-            local muzzlePos = muzzle and muzzle.Position or origin
-
-            if behavior == "Sniper" then
-                AutoShootGunTracers.createSniper(muzzlePos, hitPosition)
-            elseif behavior == "Taser" then
-                AutoShootGunTracers.createTaser(muzzlePos, hitPosition)
-            else
-                AutoShootGunTracers.createBullet(muzzlePos, hitPosition)
-            end
-        end)
-    end
 end
 
 RunService.Heartbeat:Connect(function()
