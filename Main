@@ -1358,63 +1358,34 @@ end
 
 -- ============ WEAPON SOUND PACKS ============
 local SoundPacks = {
-    ["Old Sounds"] = {
-        ["AK-47"] = { ShootSound = 153230498, ReloadSound = 142491708 },
-        ["Remington 870"] = { ShootSound = 138083993, ReloadSound = 145081845 },
-        ["M9"] = { ShootSound = 134436500, ReloadSound = 138084889 },
-        ["M700"] = { ShootSound = 135972260363158, ReloadSound = 145081845 },
-        ["M4A1"] = { ShootSound = 282003150, ReloadSound = 142491708 },
-        ["FAL"] = { ShootSound = 467459324, ReloadSound = 142491708 },
-        ["MP5"] = { ShootSound = 18512721424, ReloadSound = 142491708 },
-        ["Revolver"] = { ShootSound = 120052619815455, ReloadSound = 2041035308 },
-    },
-    ["Realistic Sounds"] = {
-        ["AK-47"] = { ShootSound = 122029429692679, ReloadSound = 76130542042000 },
-        ["Remington 870"] = { ShootSound = 133317933391361, ReloadSound = 145081845 },
-        ["M9"] = { ShootSound = 134436500, ReloadSound = 8302576808 },
-        ["M700"] = { ShootSound = 9069987808, ReloadSound = 145081845 },
-        ["M4A1"] = { ShootSound = 9341262362, ReloadSound = 76130542042000 },
-        ["FAL"] = { ShootSound = 120948620089551, ReloadSound = 76130542042000 },
-        ["MP5"] = { ShootSound = 18512721424, ReloadSound = 76130542042000 },
-        ["Revolver"] = { ShootSound = 104543426818240, ReloadSound = 139717586861911 },
-    },
-    ["Bubble Sounds"] = {
-        ["AK-47"] = { ShootSound = 132948338000932 },
-        ["Remington 870"] = { ShootSound = 8622833875 },
-        ["M9"] = { ShootSound = 95635059379804 },
-        ["M700"] = { ShootSound = 117813075686953 },
-        ["M4A1"] = { ShootSound = 109244508089412 },
-        ["FAL"] = { ShootSound = 85730811347567 },
-        ["MP5"] = { ShootSound = 125251276586253 },
-        ["Revolver"] = { ShootSound = 134530432300459 },
-    },
+    ["Silenced Shot"] = { ShootSound = 9341262362 },
+    ["Bubble Shot"] = { ShootSound = 109244508089412 },
+    ["Laser Shot"] = { ShootSound = 109075387966089 },
+    ["Dart Gun"] = { ShootSound = 5924183835 },
+    ["Energy Shot"] = { ShootSound = 113363294416214 },
+    ["Bell Ping"] = { ShootSound = 135474771574127 },
+    ["Xbox Live Notification"] = { ShootSound = 117934611310434 },
 }
 
 local CurrentSoundPack = nil
+local soundToolNames = {"AK-47", "Remington 870", "M9", "M700", "M4A1", "FAL", "MP5", "Revolver"}
 
 local function applySoundPackToTool(tool)
-    if not CurrentSoundPack then return end
     if not tool or not tool:IsA("Tool") then return end
-
-    local packData = SoundPacks[CurrentSoundPack]
-    if not packData then return end
-
-    local weaponData = packData[tool.Name]
-    if not weaponData then return end 
+    if not table.find(soundToolNames, tool.Name) then return end
 
     local handle = tool:FindFirstChild("Handle")
-    if not handle then return end 
+    if not handle then return end
 
     local shootSound = handle:FindFirstChild("ShootSound")
-    local reloadSound = handle:FindFirstChild("ReloadSound")
+    if not shootSound then return end
 
-    if shootSound and weaponData.ShootSound then
-        shootSound.SoundId = "rbxassetid://" .. weaponData.ShootSound
-    end
+    if not CurrentSoundPack then return end
 
-    if reloadSound and weaponData.ReloadSound then
-        reloadSound.SoundId = "rbxassetid://" .. weaponData.ReloadSound
-    end
+    local packData = SoundPacks[CurrentSoundPack]
+    if not packData or not packData.ShootSound then return end
+
+    shootSound.SoundId = "rbxassetid://" .. packData.ShootSound
 end
 
 local function applySoundPackToAllTools()
