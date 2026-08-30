@@ -16,8 +16,8 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.4 | by 2knw",
-    Icon = 111561535254070,
+    Footer = "Version 0.5.5 | by 2knw",
+    Icon = 74169651953690,
     NotifySide = "Right",
     ShowCustomCursor = true,
     Size = UDim2.fromOffset(700, 750), 
@@ -211,7 +211,7 @@ if Library.IsMobile then
     local CustomToggleButton = Instance.new("ImageButton")
     CustomToggleButton.Name = "CustomToggleButton"
     CustomToggleButton.BackgroundColor3 = Library.Scheme.BackgroundColor
-    CustomToggleButton.Image = "rbxassetid://111561535254070"
+    CustomToggleButton.Image = "rbxassetid://74169651953690"
     CustomToggleButton.ScaleType = Enum.ScaleType.Fit
     CustomToggleButton.Size = UDim2.fromOffset(40, 40)
     CustomToggleButton.Position = UDim2.fromOffset(6, 6)
@@ -257,17 +257,6 @@ end
 -- ============ PLAYERS TAB ============
 local PlayerSettingsBox = Tabs.Teleports:AddLeftGroupbox("Misc", "sliders")
 
-PlayerSettingsBox:AddToggle("AntiTase", {
-    Text = "Anti-tase",
-    Tooltip = "Anti-tase method made by IsaTheNoob",
-    Default = false,
-    Callback = function(v)
-        getgenv().setAntiTaseEnabled(v)
-    end,
-})
-
-PlayerSettingsBox:AddDivider()
-
 PlayerSettingsBox:AddSlider("CameraFOV", {
     Text = "Camera FOV",
     Tooltip = "Changes camera FOV",
@@ -290,6 +279,35 @@ PlayerSettingsBox:AddSlider("SpinbotSpeed", {
     Rounding = 1,
     Callback = function(Value)
         getgenv().SilentAimSettings.SpinbotSpeed = Value
+    end,
+})
+
+PlayerSettingsBox:AddDivider()
+
+PlayerSettingsBox:AddButton({
+    Text = "Activate Anti-Tase",
+    Func = function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local remote = nil
+        pcall(function()
+            remote = ReplicatedStorage:WaitForChild("GunRemotes", 5):WaitForChild("PlayerTased", 5)
+        end)
+
+        task.spawn(function()
+            while true do
+                if remote then
+                    local ok, connections = pcall(getconnections, remote.OnClientEvent)
+                    if ok then
+                        for _, conn in connections do
+                            conn:Disable()
+                        end
+                    end
+                end
+                task.wait(0.5)
+            end
+        end)
+        
+        Library:Notify({ Title = "Anti-Tase", Text = "Anti-Tase ativado! 🛡️" })
     end,
 })
 
@@ -531,8 +549,9 @@ AimbotLeftBox:AddDropdown("TargetTeams", {
 
 Options.TargetTeams:SetValue({ Inmates = true, Guards = true, Criminals = true })
 
--- ============ TARGET MODE ============
+-- ============ TARGET MODE - FIXED ============
 local lastTargetModeSelection = { ["Manual"] = true }
+local updateInProgress = false
 
 AimbotLeftBox:AddDropdown("TargetMode", {
     Values = {"Manual", "🔗 Trespass", "💢 Hostile"},
@@ -541,32 +560,38 @@ AimbotLeftBox:AddDropdown("TargetMode", {
     Text = "Target Mode",
     Tooltip = "Manual grabs any valid player. Trespass/Hostile restrict targeting to inmates flagged as such (can combine both, but not with Manual)",
     Callback = function(Value)
-        Value = Value or {}
+        if updateInProgress then return end
+        updateInProgress = true
+        
+        task.defer(function()
+            Value = Value or {}
 
-        local wasManual = lastTargetModeSelection["Manual"]
-        local isManual = Value["Manual"]
-        local isTrespass = Value["🔗 Trespass"]
-        local isHostile = Value["💢 Hostile"]
+            local wasManual = lastTargetModeSelection["Manual"]
+            local isManual = Value["Manual"]
+            local isTrespass = Value["🔗 Trespass"]
+            local isHostile = Value["💢 Hostile"]
 
-        local manualJustSelected = isManual and not wasManual
+            local manualJustSelected = isManual and not wasManual
 
-        local finalValue = {}
+            local finalValue = {}
 
-        if manualJustSelected then
-            finalValue = { ["Manual"] = true }
-        elseif isTrespass or isHostile then
-            if isTrespass then finalValue["🔗 Trespass"] = true end
-            if isHostile then finalValue["💢 Hostile"] = true end
-        else
-            finalValue = { ["Manual"] = true }
-        end
+            if manualJustSelected then
+                finalValue = { ["Manual"] = true }
+            elseif isTrespass or isHostile then
+                if isTrespass then finalValue["🔗 Trespass"] = true end
+                if isHostile then finalValue["💢 Hostile"] = true end
+            else
+                finalValue = { ["Manual"] = true }
+            end
 
-        lastTargetModeSelection = finalValue
+            lastTargetModeSelection = finalValue
 
-        getgenv().SilentAimSettings.TrespassCheck = finalValue["🔗 Trespass"] == true
-        getgenv().SilentAimSettings.HostileCheck = finalValue["?? Hostile"] == true
+            getgenv().SilentAimSettings.TrespassCheck = finalValue["🔗 Trespass"] == true
+            getgenv().SilentAimSettings.HostileCheck = finalValue["💢 Hostile"] == true
 
-        Options.TargetMode:SetValue(finalValue)
+            Options.TargetMode:SetValue(finalValue)
+            updateInProgress = false
+        end)
     end,
 })
 
@@ -899,7 +924,7 @@ local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 SoundTab:AddDropdown("WeaponSoundPack", {
     Values = {"None", "Silenced Shot", "Bubble Shot", "Laser Shot", "Dart Gun", "Energy Shot", "Bell Ping", "Xbox Live Notification"},
     Default = "None",
-    Text = "Sound Pack",
+    Text = "Custom Shot Sound",
     Tooltip = "Applies a custom shoot sound to all supported weapons",
     Callback = function(Value)
         getgenv().SetWeaponSoundPack(Value)
