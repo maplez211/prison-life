@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.6 | by 2knw",
+    Footer = "Version 0.5.7 | by 2knw",
     Icon = 74169651953690,
     NotifySide = "Right",
     ShowCustomCursor = true,
