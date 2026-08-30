@@ -53,6 +53,10 @@ getgenv().SilentAimSettings = {
     HitboxSize = 1,
     HitboxTransparency = 0.5,
     HitboxShape = "Box",
+    GunSwitchList = {},
+    GunSwitchDelay = 0.01,
+    ShowGunSwitchButton = false,
+    GunSwitchEnabled = false,
 }
 
 local Settings = getgenv().SilentAimSettings
@@ -355,7 +359,6 @@ local function getClosestTarget()
     local closest = nil
     local shortestDistance = math.huge
     
-    -- Se o modo for "Distance", seleciona o player mais próximo (ignorando FOV)
     if Settings.AimMode == "Distance" then
         for _, plr in ipairs(Players:GetPlayers()) do
             if isValidTarget(plr) then
@@ -808,6 +811,70 @@ function setAntiTaseEnabled(enabled)
         stopAntiTase()
     end
 end
+
+-- ============ GUN SWITCHER (FAST SWITCH) ============
+local function getBackpackWeapon(name)
+    local backpack = player:FindFirstChild("Backpack")
+    return backpack and backpack:FindFirstChild(name)
+end
+
+task.spawn(function()
+    while true do
+        if not Settings.GunSwitchEnabled or #Settings.GunSwitchList == 0 then
+            task.wait(0.1)
+            continue
+        end
+
+        local char = player.Character
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then
+            task.wait(0.1)
+            continue
+        end
+
+        for _, weaponName in ipairs(Settings.GunSwitchList) do
+            if not Settings.GunSwitchEnabled then break end
+
+            local weapon = getBackpackWeapon(weaponName)
+            if weapon then
+                humanoid:EquipTool(weapon)
+            end
+
+            task.wait(Settings.GunSwitchDelay)
+        end
+    end
+end)
+
+local gunSwitchButton = Instance.new("ImageButton")
+gunSwitchButton.Name = "GunSwitchButton"
+gunSwitchButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+gunSwitchButton.Image = ""
+gunSwitchButton.ScaleType = Enum.ScaleType.Fit
+gunSwitchButton.Size = UDim2.fromOffset(40, 40)
+gunSwitchButton.Position = UDim2.fromOffset(6, 52)
+gunSwitchButton.ZIndex = 10
+gunSwitchButton.Visible = Settings.ShowGunSwitchButton
+gunSwitchButton.Active = true
+gunSwitchButton.Draggable = true
+gunSwitchButton.Parent = screenGui
+
+local gunSwitchCorner = Instance.new("UICorner")
+gunSwitchCorner.CornerRadius = UDim.new(0, 10)
+gunSwitchCorner.Parent = gunSwitchButton
+
+local gunSwitchStroke = Instance.new("UIStroke")
+gunSwitchStroke.Color = Color3.fromRGB(80, 80, 80)
+gunSwitchStroke.Thickness = 1
+gunSwitchStroke.Parent = gunSwitchButton
+
+gunSwitchButton.MouseButton1Click:Connect(function()
+    Settings.GunSwitchEnabled = not Settings.GunSwitchEnabled
+    gunSwitchButton.BackgroundColor3 = Settings.GunSwitchEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(30, 30, 30)
+end)
+
+RunService.RenderStepped:Connect(function()
+    gunSwitchButton.Visible = Settings.ShowGunSwitchButton
+end)
 
 -- ============ HITBOX EXPANDER ============
 local hitboxModified = {}
