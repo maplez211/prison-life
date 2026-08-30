@@ -10,8 +10,56 @@ local Toggles = Library.Toggles
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
+
+-- ============ SCROLL WATCHDOG ============
+do
+    local ActiveTouchCount = 0
+
+    UserInputService.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch then
+            ActiveTouchCount += 1
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch then
+            ActiveTouchCount = math.max(0, ActiveTouchCount - 1)
+        end
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        if Library.Unloaded then
+            return
+        end
+
+        local MouseDown = false
+        pcall(function()
+            MouseDown = UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+        end)
+
+        if MouseDown or ActiveTouchCount > 0 then
+            return
+        end
+
+        local ActiveTab = Library.ActiveTab
+        if ActiveTab and not ActiveTab.IsKeyTab and ActiveTab.Sides then
+            for _, Side in ActiveTab.Sides do
+                if Side.ScrollingEnabled == false then
+                    Side.ScrollingEnabled = true
+                end
+            end
+        end
+
+        if Library.ActiveLoading and Library.ActiveLoading.Sidebar and Library.ActiveLoading.Sidebar.Container then
+            if Library.ActiveLoading.Sidebar.Container.ScrollingEnabled == false then
+                Library.ActiveLoading.Sidebar.Container.ScrollingEnabled = true
+            end
+        end
+    end)
+end
 
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
@@ -1009,6 +1057,7 @@ ClampColorPickerToScreen("ESPTargetColor")
 ClampColorPickerToScreen("FogColor")
 ClampColorPickerToScreen("TracerColor")
 ClampColorPickerToScreen("BulletColor")
+ClampColorPickerToScreen("WeaponColor")
 
 -- ============ TELEPORTS TAB ============
 local TeleportsBox = Tabs.Teleports:AddRightGroupbox("Teleports", "map-pin")
