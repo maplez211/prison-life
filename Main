@@ -1,3 +1,4 @@
+
 -- Main Script Kayen Hub | Prison Life
 
 local Players = game:GetService("Players")
@@ -757,7 +758,10 @@ local antiTaseEnabled = false
 local antiTaseConnection = nil
 
 local function startAntiTase()
-    if antiTaseConnection then return end
+    if antiTaseConnection then
+        antiTaseConnection:Disconnect()
+        antiTaseConnection = nil
+    end
 
     antiTaseConnection = task.spawn(function()
         local remote = nil
@@ -782,6 +786,7 @@ end
 local function stopAntiTase()
     antiTaseEnabled = false
     if antiTaseConnection then
+        antiTaseConnection:Disconnect()
         antiTaseConnection = nil
     end
 
