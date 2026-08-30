@@ -16,7 +16,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.2 | by 2knw",
+    Footer = "Version 0.5.3 | by 2knw",
     Icon = 111561535254070,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -175,7 +175,7 @@ end
 local UpdatesBox = Tabs.Info:AddLeftGroupbox("Updates", "bell")
 
 UpdatesBox:AddLabel("Prison Life", true)
-UpdatesBox:AddLabel("- Added Weapons Colors", true)
+UpdatesBox:AddLabel("- Remade custom Shot\n- Added Kill sound\n- Added Teleport to Player tab", true)
 
 UpdatesBox:AddDivider("Info")
 
@@ -396,50 +396,12 @@ EnvironmentCloudTab:AddDropdown("Skyboxes", {
     end,
 })
 
-local PlayersBox = Tabs.Teleports:AddLeftGroupbox("Players", "users")
-
-
 local playerOptions = {"Select a player..."}
 for _, plr in ipairs(Players:GetPlayers()) do
     if plr ~= player then
         table.insert(playerOptions, plr.Name)
     end
 end
-
-PlayersBox:AddDropdown("TeleportPlayer", {
-    Values = playerOptions,
-    Default = 1,
-    Text = "Teleport to Player",
-    Tooltip = "Select a player to teleport to them",
-    Callback = function(Value)
-        if not Value or Value == "Select a player..." then return end
-        local target = Players:FindFirstChild(Value)
-        if target and target.Character then
-            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local c = player.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
-                end
-            end
-        end
-    end,
-})
-
-PlayersBox:AddButton({
-    Text = "Update Players List",
-    Func = function()
-        local options = {"Select a player..."}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(options, plr.Name)
-            end
-        end
-        Options.TeleportPlayer:SetValues(options)
-    end,
-})
-
--- ============ VIEW PLAYER SECTION ============
 
 local viewPlayerOptions = {"Select a player..."}
 for _, plr in ipairs(Players:GetPlayers()) do
@@ -486,37 +448,6 @@ local function startSpectate(targetName)
         end
     end)
 end
-
-PlayersBox:AddDropdown("ViewPlayer", {
-    Values = viewPlayerOptions,
-    Default = 1,
-    Text = "View Player",
-    Tooltip = "Select a player to spectate",
-    Callback = function(Value)
-        if not Value or Value == "Select a player..." then
-            SPECTATE_PLAYER = nil
-            stopSpectate()
-            return
-        end
-        SPECTATE_PLAYER = Value
-        startSpectate(Value)  
-    end,
-})
-
-PlayersBox:AddButton({
-    Text = "Update Players List",
-    Func = function()
-        local options = {"Select a player..."}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(options, plr.Name)
-            end
-        end
-        SPECTATE_PLAYER = nil
-        stopSpectate()
-        Options.ViewPlayer:SetValues(options)
-    end,
-})
 
 -- ============ AIMBOT TAB ============
 local AimbotLeftBox = Tabs.Aimbot:AddLeftGroupbox("Aim Settings", "crosshair")
@@ -955,10 +886,10 @@ PaintTab:AddDropdown("WeaponMaterial", {
 local SoundTab = WeaponModsTabbox:AddTab(nil, "volume-2")
 
 SoundTab:AddDropdown("WeaponSoundPack", {
-    Values = {"None", "Old Sounds", "Realistic Sounds", "Bubble Sounds"},
+    Values = {"None", "Silenced Shot", "Bubble Shot", "Laser Shot", "Dart Gun", "Energy Shot", "Bell Ping", "Xbox Live Notification"},
     Default = "None",
     Text = "Sound Pack",
-    Tooltip = "Applies custom Shoot/Reload sounds to all supported weapons",
+    Tooltip = "Applies a custom shoot sound to all supported weapons",
     Callback = function(Value)
         getgenv().SetWeaponSoundPack(Value)
     end,
@@ -1081,6 +1012,9 @@ ClampColorPickerToScreen("BulletColor")
 
 -- ============ TELEPORTS TAB ============
 local TeleportsBox = Tabs.Teleports:AddRightGroupbox("Teleports", "map-pin")
+local TeleportsTabbox = TeleportsBox:AddTabbox()
+local LocationsTab = TeleportsTabbox:AddTab(nil, "map-pin")
+local TeleportPlayerTab = TeleportsTabbox:AddTab(nil, "users")
 
 local teleports = {
     {"Nexus 1", Vector3.new(864, 100, 2406)},
@@ -1110,7 +1044,7 @@ local teleports = {
 }
 
 for _, tp in ipairs(teleports) do
-    TeleportsBox:AddButton({
+    LocationsTab:AddButton({
         Text = tp[1],
         Func = function()
             local c = player.Character
@@ -1120,6 +1054,74 @@ for _, tp in ipairs(teleports) do
         end,
     })
 end
+
+TeleportPlayerTab:AddDivider("Teleport to Player")
+
+TeleportPlayerTab:AddDropdown("TeleportPlayer", {
+    Values = playerOptions,
+    Default = 1,
+    Text = "Teleport to Player",
+    Tooltip = "Select a player to teleport to them",
+    Callback = function(Value)
+        if not Value or Value == "Select a player..." then return end
+        local target = Players:FindFirstChild(Value)
+        if target and target.Character then
+            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local c = player.Character
+                if c and c:FindFirstChild("HumanoidRootPart") then
+                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                end
+            end
+        end
+    end,
+})
+
+TeleportPlayerTab:AddButton({
+    Text = "Update Players List",
+    Func = function()
+        local options = {"Select a player..."}
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                table.insert(options, plr.Name)
+            end
+        end
+        Options.TeleportPlayer:SetValues(options)
+    end,
+})
+
+TeleportPlayerTab:AddDivider("View Player")
+
+TeleportPlayerTab:AddDropdown("ViewPlayer", {
+    Values = viewPlayerOptions,
+    Default = 1,
+    Text = "View Player",
+    Tooltip = "Select a player to spectate",
+    Callback = function(Value)
+        if not Value or Value == "Select a player..." then
+            SPECTATE_PLAYER = nil
+            stopSpectate()
+            return
+        end
+        SPECTATE_PLAYER = Value
+        startSpectate(Value)  
+    end,
+})
+
+TeleportPlayerTab:AddButton({
+    Text = "Update Players List",
+    Func = function()
+        local options = {"Select a player..."}
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= player then
+                table.insert(options, plr.Name)
+            end
+        end
+        SPECTATE_PLAYER = nil
+        stopSpectate()
+        Options.ViewPlayer:SetValues(options)
+    end,
+})
 
 -- ============ UI SETTINGS ============
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu", "settings")
