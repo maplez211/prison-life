@@ -10,6 +10,7 @@ local Toggles = Library.Toggles
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 
@@ -1178,6 +1179,40 @@ for _, tp in ipairs(teleports) do
             end
         end,
     })
+end
+
+-- ============ TELEPORTS SCROLL DRAG FIX (UI-script only) ============
+do
+    local ScrollSide = Tabs.Teleports.Sides[2] 
+    local ScrollTarget = LocationsTab.Container
+    local lastTranslation = nil
+
+    UserInputService.TouchPan:Connect(function(touchPositions, totalTranslation, velocity, state)
+        local touchPos = touchPositions[1]
+        if not touchPos then return end
+
+        if state == Enum.UserInputState.Begin then
+            if Library:MouseIsOverFrame(ScrollTarget, touchPos) then
+                lastTranslation = totalTranslation
+            else
+                lastTranslation = nil
+            end
+            return
+        end
+
+        if not lastTranslation then return end
+
+        local delta = totalTranslation - lastTranslation
+        lastTranslation = totalTranslation
+
+        local maxY = math.max(0, ScrollSide.AbsoluteCanvasSize.Y - ScrollSide.AbsoluteWindowSize.Y)
+        local newY = math.clamp(ScrollSide.CanvasPosition.Y - delta.Y, 0, maxY)
+        ScrollSide.CanvasPosition = Vector2.new(ScrollSide.CanvasPosition.X, newY)
+
+        if state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
+            lastTranslation = nil
+        end
+    end)
 end
 
 TeleportPlayerTab:AddDivider("Teleport to Player")
