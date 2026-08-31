@@ -1,3 +1,4 @@
+
 -- UI Script Kayen | Prison Life - Obsidian Library Version
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
@@ -16,7 +17,7 @@ Library.Scheme.AccentColor = Color3.fromRGB(126, 212, 230)
 -- ============ WINDOW SETUP ============
 local Window = Library:CreateWindow({
     Title = "",
-    Footer = "Version 0.5.7 | by 2knw",
+    Footer = "Version 0.5.8 | by 2knw",
     Icon = 74169651953690,
     NotifySide = "Right",
     ShowCustomCursor = true,
@@ -327,7 +328,7 @@ local DefaultOutdoorAmbient = game:GetService("Lighting").OutdoorAmbient
 local CurrentGradientColor = Color3.fromRGB(255, 255, 255)
 local CurrentOutdoorGradient = Color3.fromRGB(255, 255, 255)
 
-EnvironmentNetworkTab:AddToggle("WorldGradient", {
+EnvironmentNetworkTab:AddCheckbox("WorldGradient", {
     Text = "World Gradient",
     Tooltip = "Enables custom world gradient colors",
     Default = false,
@@ -371,7 +372,7 @@ EnvironmentNetworkTab:AddLabel("Outdoor Gradient"):AddColorPicker("OutdoorGradie
 
 EnvironmentNetworkTab:AddDivider()
 
-EnvironmentNetworkTab:AddToggle("RemoveFog", {
+EnvironmentNetworkTab:AddCheckbox("RemoveFog", {
     Text = "Remove Fog",
     Tooltip = "Removes the fog from the game",
     Default = false,
@@ -398,7 +399,7 @@ EnvironmentNetworkTab:AddToggle("RemoveFog", {
 local CustomSkyboxEnabled = false
 local CurrentSkybox = "None"
 
-EnvironmentCloudTab:AddToggle("CustomSkybox", {
+EnvironmentCloudTab:AddCheckbox("CustomSkybox", {
     Text = "Custom Skybox",
     Tooltip = "Enables applying a custom skybox",
     Default = false,
@@ -481,7 +482,7 @@ end
 -- ============ AIMBOT TAB ============
 local AimbotLeftBox = Tabs.Aimbot:AddLeftGroupbox("Aim Settings", "crosshair")
 
-AimbotLeftBox:AddToggle("SilentAim", {
+AimbotLeftBox:AddCheckbox("SilentAim", {
     Text = "Silent Aim",
     Tooltip = "Silent Aim method by 7zz",
     Default = true,
@@ -490,7 +491,7 @@ AimbotLeftBox:AddToggle("SilentAim", {
     end,
 })
 
-AimbotLeftBox:AddToggle("Autoshoot", {
+AimbotLeftBox:AddCheckbox("Autoshoot", {
     Text = "Autoshoot",
     Tooltip = "Automatically fires when Silent Aim has a locked target",
     Default = false,
@@ -499,7 +500,7 @@ AimbotLeftBox:AddToggle("Autoshoot", {
     end,
 })
 
-AimbotLeftBox:AddToggle("WallCheck", {
+AimbotLeftBox:AddCheckbox("WallCheck", {
     Text = "Wall Check",
     Tooltip = "Ignore Players behind Walls",
     Default = true,
@@ -508,7 +509,7 @@ AimbotLeftBox:AddToggle("WallCheck", {
     end,
 })
 
-AimbotLeftBox:AddToggle("TeamCheck", {
+AimbotLeftBox:AddCheckbox("TeamCheck", {
     Text = "Team Check",
     Tooltip = "Ignore Players on your Team",
     Default = true,
@@ -517,7 +518,7 @@ AimbotLeftBox:AddToggle("TeamCheck", {
     end,
 })
 
-AimbotLeftBox:AddToggle("FriendCheck", {
+AimbotLeftBox:AddCheckbox("FriendCheck", {
     Text = "Friend Check",
     Tooltip = "Ignore your Friends",
     Default = true,
@@ -526,7 +527,7 @@ AimbotLeftBox:AddToggle("FriendCheck", {
     end,
 })
 
-AimbotLeftBox:AddToggle("ForceFieldCheck", {
+AimbotLeftBox:AddCheckbox("ForceFieldCheck", {
     Text = "ForceField Check",
     Tooltip = "Ignore players who currently have a ForceField",
     Default = true,
@@ -626,7 +627,7 @@ AimbotLeftBox:AddDropdown("TargetPart", {
 local HitboxExpanderBox = Tabs.Aimbot:AddLeftGroupbox("Hitbox Expander", "maximize-2")
 HitboxExpanderBox:SetDescription("Enlarges player hitboxes")
 
-HitboxExpanderBox:AddToggle("EnableHitboxExpander", {
+HitboxExpanderBox:AddCheckbox("EnableHitboxExpander", {
     Text = "Enable Hitbox Expander",
     Default = false,
     Callback = function(v)
@@ -634,7 +635,7 @@ HitboxExpanderBox:AddToggle("EnableHitboxExpander", {
     end,
 })
 
-HitboxExpanderBox:AddToggle("HitboxTeamCheck", {
+HitboxExpanderBox:AddCheckbox("HitboxTeamCheck", {
     Text = "Team Check",
     Default = true,
     Callback = function(v)
@@ -717,7 +718,7 @@ local FOVIconTabbox = FOVBox:AddTabbox()
 local FOVEyeTab = FOVIconTabbox:AddTab(nil, "scan-eye")
 local FOVUsersTab = FOVIconTabbox:AddTab(nil, "users")
 
-FOVEyeTab:AddToggle("HideFOV", {
+FOVEyeTab:AddCheckbox("HideFOV", {
     Text = "Show FOV Circle",
     Default = true,
     Callback = function(v)
@@ -810,6 +811,54 @@ FOVUsersTab:AddButton({
     end,
 })
 
+-- ============ FAST SWITCH BUTTON (estilizado como a Library) ============
+local FastSwitchOnColor = Color3.fromRGB(150, 199, 150)
+
+local FastSwitchButton = Instance.new("TextButton")
+FastSwitchButton.Name = "FastSwitchButton"
+FastSwitchButton.AutoButtonColor = false
+FastSwitchButton.BackgroundColor3 = Library.Scheme.MainColor
+FastSwitchButton.Position = UDim2.fromOffset(6, 52)
+FastSwitchButton.Size = UDim2.fromOffset(130, 32)
+FastSwitchButton.Text = "Fast Switch: OFF"
+FastSwitchButton.TextColor3 = Library.Scheme.FontColor
+FastSwitchButton.Font = Enum.Font.Gotham
+FastSwitchButton.TextSize = 14
+FastSwitchButton.ZIndex = 10
+FastSwitchButton.Visible = false
+FastSwitchButton.Parent = Library.ScreenGui
+
+local FastSwitchButtonCorner = Instance.new("UICorner")
+FastSwitchButtonCorner.CornerRadius = UDim.new(0, Library.CornerRadius)
+FastSwitchButtonCorner.Parent = FastSwitchButton
+table.insert(Library.Corners, FastSwitchButtonCorner)
+
+Library:AddOutline(FastSwitchButton)
+
+local function updateFastSwitchButtonVisual()
+    local enabled = getgenv().SilentAimSettings.GunSwitchEnabled
+    FastSwitchButton.Text = enabled and "Fast Switch: ON" or "Fast Switch: OFF"
+
+    if enabled then
+        FastSwitchButton.BackgroundColor3 = FastSwitchOnColor
+        Library:AddToRegistry(FastSwitchButton, { TextColor3 = "FontColor" })
+    else
+        FastSwitchButton.BackgroundColor3 = Library.Scheme.MainColor
+        Library:AddToRegistry(FastSwitchButton, {
+            BackgroundColor3 = "MainColor",
+            TextColor3 = "FontColor",
+        })
+    end
+end
+
+FastSwitchButton.MouseButton1Click:Connect(function()
+    local newState = not getgenv().SilentAimSettings.GunSwitchEnabled
+    getgenv().ToggleGunSwitch(newState)
+    updateFastSwitchButtonVisual()
+end)
+
+updateFastSwitchButtonVisual()
+
 -- ============ GUN SWITCHER ============
 local GunSwitcherBox = Tabs.Aimbot:AddRightGroupbox("Gun Switcher", "repeat")
 
@@ -842,11 +891,11 @@ GunSwitcherBox:AddSlider("SwitchDelay", {
 
 GunSwitcherBox:AddDivider()
 
-GunSwitcherBox:AddToggle("ShowGunSwitchButton", {
+GunSwitcherBox:AddCheckbox("ShowGunSwitchButton", {
     Text = "Show Gun Switch Button",
     Default = false,
     Callback = function(v)
-        getgenv().SetShowGunSwitchButton(v)
+        FastSwitchButton.Visible = v
     end,
 })
 
@@ -856,7 +905,7 @@ local WeaponModsTabbox = WeaponModBox:AddTabbox()
 
 local GunModTab = WeaponModsTabbox:AddTab(nil, "wrench")
 
-GunModTab:AddToggle("WeaponMod", {
+GunModTab:AddCheckbox("WeaponMod", {
     Text = "Weapon Mod",
     Default = false,
     Callback = function(v)
@@ -866,7 +915,7 @@ GunModTab:AddToggle("WeaponMod", {
 
 GunModTab:AddDivider()
 
-GunModTab:AddToggle("AutoFire", {
+GunModTab:AddCheckbox("AutoFire", {
     Text = "Auto Fire",
     Default = false,
     Callback = function(v)
@@ -874,7 +923,7 @@ GunModTab:AddToggle("AutoFire", {
     end,
 })
 
-GunModTab:AddToggle("FastFirerate", {
+GunModTab:AddCheckbox("FastFirerate", {
     Text = "Fast Firerate",
     Default = false,
     Callback = function(v)
@@ -897,7 +946,7 @@ GunModTab:AddSlider("FireRateValue", {
 
 local ChainTab = WeaponModsTabbox:AddTab(nil, "cable")
 
-ChainTab:AddToggle("CustomBulletColor", {
+ChainTab:AddCheckbox("CustomBulletColor", {
     Text = "Custom Bullet Color",
     Tooltip = "Applies a custom color to all bullets, current and future weapons",
     Default = false,
@@ -919,7 +968,7 @@ ChainTab:AddLabel("Bullet Color"):AddColorPicker("BulletColor", {
 })
 
 local PaintTab = WeaponModsTabbox:AddTab(nil, "paintbrush")
-PaintTab:AddToggle("EnableWeaponColor", {
+PaintTab:AddCheckbox("EnableWeaponColor", {
     Text = "Enable Weapon Color",
     Default = false,
     Callback = function(v)
@@ -974,7 +1023,7 @@ SoundTab:AddDropdown("WeaponSoundPack", {
 -- ============ VISUALS TAB ============
 local VisualsLeftBox = Tabs.Visuals:AddLeftGroupbox("Highlight ESP", "eye")
 
-VisualsLeftBox:AddToggle("ESP", {
+VisualsLeftBox:AddCheckbox("ESP", {
     Text = "Highlight ESP",
     Default = false,
     Callback = function(v)
@@ -993,7 +1042,7 @@ VisualsLeftBox:AddLabel("Target Highlight Color"):AddColorPicker("ESPTargetColor
     end,
 })
 
-VisualsLeftBox:AddToggle("HideESPNames", {
+VisualsLeftBox:AddCheckbox("HideESPNames", {
     Text = "Hide ESP Names",
     Tooltip = "Hides the names above players when ESP is active",
     Default = false,
@@ -1006,7 +1055,7 @@ VisualsLeftBox:AddToggle("HideESPNames", {
 -- ============ TRACER ESP SECTION ============
 local TracerBox = Tabs.Visuals:AddRightGroupbox("Tracer ESP", "zap")
 
-TracerBox:AddToggle("TracerESP", {
+TracerBox:AddCheckbox("TracerESP", {
     Text = "Tracer ESP",
     Tooltip = "Shows a beam to every visible player, colored by team",
     Default = false,
@@ -1027,7 +1076,7 @@ TracerBox:AddSlider("TracerThickness", {
     end,
 })
 
-TracerBox:AddToggle("TracerTargetOnly", {
+TracerBox:AddCheckbox("TracerTargetOnly", {
     Text = "Target Only",
     Tooltip = "Only shows the tracer on the player who is your current target",
     Default = false,
@@ -1203,7 +1252,7 @@ TeleportPlayerTab:AddButton({
 -- ============ UI SETTINGS ============
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu", "settings")
 
-MenuGroup:AddToggle("KeybindMenuOpen", {
+MenuGroup:AddCheckbox("KeybindMenuOpen", {
     Text = "Open Keybind Menu",
     Default = Library.KeybindFrame.Visible,
     Callback = function(value)
@@ -1211,7 +1260,7 @@ MenuGroup:AddToggle("KeybindMenuOpen", {
     end,
 })
 
-MenuGroup:AddToggle("ShowCustomCursor", {
+MenuGroup:AddCheckbox("ShowCustomCursor", {
     Text = "Custom Cursor",
     Default = Library.ShowCustomCursor,
     Callback = function(Value)
@@ -1219,7 +1268,7 @@ MenuGroup:AddToggle("ShowCustomCursor", {
     end,
 })
 
-MenuGroup:AddToggle("AlwaysOnTop", {
+MenuGroup:AddCheckbox("AlwaysOnTop", {
     Text = "Always On Top",
     Default = false,
     Callback = function(Value)
