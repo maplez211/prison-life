@@ -1,5 +1,5 @@
 -- UI Script Kayen | Prison Life - Obsidian Library Version
-local repo = "https://raw.githubusercontent.com/maplez211/Obsidian/main/"
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
